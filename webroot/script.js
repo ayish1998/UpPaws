@@ -49,7 +49,8 @@ class CyberQuestApp {
           this.resultSection.classList.add('hidden');
         } else {
           // Close the webview if it wasn't a correct answer
-          window.parent.postMessage('close', '*');
+          console.log('Closing WebView');
+          postWebViewMessage({ type: 'close' });
         }
       } catch (e) {
         console.error('Failed to process next button click:', e);
@@ -124,7 +125,6 @@ class CyberQuestApp {
             this.nextButton.innerText = "Next Challenge";
           } else {
             this.resultMessage.innerHTML = `❌ <span class="incorrect">Not quite.</span> The correct answer was "${this.#getActionDisplay(correctAnswer)}".`;
-            // Keep default "Back to Reddit" text
           }
           
           this.explanation.innerText = explanation;
@@ -178,7 +178,12 @@ class CyberQuestApp {
 function postWebViewMessage(msg) {
   try {
     console.log('Posting message to parent:', msg);
-    window.parent.postMessage(msg, '*');
+    // Make sure the message has a type property and is serializable
+    const safeMsg = {
+      type: msg.type,
+      data: msg.data || {}
+    };
+    window.parent.postMessage(safeMsg, '*');
   } catch (e) {
     console.error('Failed to post message:', e);
   }

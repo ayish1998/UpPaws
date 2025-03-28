@@ -31,7 +31,8 @@ export type DevvitMessage =
 export type WebViewMessage =
   | { type: 'webViewReady' }
   | { type: 'submitAnswer'; data: { answer: string } }
-  | { type: 'getNextChallenge' };
+  | { type: 'getNextChallenge' }
+  | { type: 'close' };
 
 /**
  * Web view MessageEvent listener data type. The Devvit API wraps all messages

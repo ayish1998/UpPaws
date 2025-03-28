@@ -118,61 +118,87 @@ Devvit.addCustomPostType({
 
       // Handle messages sent from the web view
       async onMessage(message, webView) {
-        switch (message.type) {
-          case 'webViewReady':
-            // Send initial data to the web view
-            webView.postMessage({
-              type: 'initialData',
-              data: {
-                username: username,
-                challenge: challenge,
-                userScore: score
-              },
-            });
-            break;
-          case 'submitAnswer':
-            // Check if the answer is correct
-            const isCorrect = message.data.answer === challenge.correctAnswer;
-            
-            // Update user score if correct
-            if (isCorrect && username) {
-              const newScore = score + 5;
-              await updateScore(newScore);
-              
-              // Send score update
+        // Check if message is valid and has a type
+        if (!message || typeof message !== 'object') {
+          console.error('Invalid message received', message);
+          return;
+        }
+
+        // Get and validate message type
+        const messageType = message.type;
+        if (!messageType || typeof messageType !== 'string') {
+          console.error('Message missing valid type property', message);
+          return;
+        }
+
+        try {
+          switch (messageType) {
+            case 'webViewReady':
+              // Send initial data to the web view
               webView.postMessage({
-                type: 'updateScore',
-                data: { newScore }
+                type: 'initialData',
+                data: {
+                  username: username,
+                  challenge: challenge,
+                  userScore: score
+                },
               });
-            }
-            
-            // Send answer result to the web view
-            webView.postMessage({
-              type: 'answerResult',
-              data: {
-                isCorrect,
-                explanation: challenge.explanation,
-                correctAnswer: challenge.correctAnswer
+              break;
+            case 'submitAnswer':
+              if (!message.data || !message.data.answer) {
+                console.error('Submit answer message missing answer data', message);
+                return;
               }
-            });
-            break;
-          case 'getNextChallenge':
-            // Generate a new challenge and send it to the web view
-            const newChallenge = getRandomChallenge();
-            
-            // Update the challenge in Redis for this post
-            await context.redis.set(`challenge_${context.postId}`, JSON.stringify(newChallenge));
-            
-            // Send the new challenge to the web view
-            webView.postMessage({
-              type: 'nextChallenge',
-              data: {
-                challenge: newChallenge
+              
+              // Check if the answer is correct
+              const isCorrect = message.data.answer === challenge.correctAnswer;
+              
+              // Update user score if correct
+              if (isCorrect && username) {
+                const newScore = score + 5;
+                await updateScore(newScore);
+                
+                // Send score update
+                webView.postMessage({
+                  type: 'updateScore',
+                  data: { newScore }
+                });
               }
-            });
-            break;
-          default:
-            throw new Error(`Unknown message type: ${message satisfies never}`);
+              
+              // Send answer result to the web view
+              webView.postMessage({
+                type: 'answerResult',
+                data: {
+                  isCorrect,
+                  explanation: challenge.explanation,
+                  correctAnswer: challenge.correctAnswer
+                }
+              });
+              break;
+            case 'getNextChallenge':
+              // Generate a new challenge and send it to the web view
+              const newChallenge = getRandomChallenge();
+              
+              // Update the challenge in Redis for this post
+              await context.redis.set(`challenge_${context.postId}`, JSON.stringify(newChallenge));
+              
+              // Send the new challenge to the web view
+              webView.postMessage({
+                type: 'nextChallenge',
+                data: {
+                  challenge: newChallenge
+                }
+              });
+              break;
+            case 'close':
+              // Close the web view when explicitly requested
+              webView.unmount();
+              break;
+            default:
+              console.error(`Unknown message type: ${messageType}`, message);
+          }
+        } catch (error) {
+          console.error('Error processing message:', error, message);
         }
       },
       onUnmount() {
@@ -182,49 +208,51 @@ Devvit.addCustomPostType({
 
     // Render the custom post type
     return (
-        <vstack grow padding="large">
+      <vstack grow padding="large">
         <vstack grow gap="large">
-          <vstack alignment="middle center">
-            <text size="xxlarge" weight="bold" color="brand">
-              RedditQuest Cybersecurity Game Challenge
+          <vstack alignment="middle center" gap="small">
+            <text size="xlarge" weight="bold" color="brand">
+              RedditQuest Cybersecurity Challenge
             </text>
-            <text size="large">Test your online safety knowledge</text>
+            <text size="medium">Test your online safety knowledge</text>
           </vstack>
           
-          <vstack backgroundColor="neutralBorder" cornerRadius="small" padding="small">
-            <hstack gap="small" alignment="center middle">
+          <vstack backgroundColor="error" borderRadius="medium" padding="medium">
+            <hstack gap="medium" alignment="center middle" padding="small">
               <image url="https://www.redditstatic.com/avatars/defaults/v2/avatar_default_1.png" size="small" />
-              <vstack>
-              <hstack gap="small" alignment="center">
-              <text size="large" weight="bold">Username:</text>
-              <text size="small" weight="bold" color="white">
-                {username ?? 'anonymous'}
-              </text>
-            </hstack>
-            <hstack gap="small" alignment="center">
-              <text size="large" weight="bold">Current score:</text>
-              <text size="small" weight="bold" color="primary">
-                {score ?? '0'} points
-              </text>
+              <vstack gap="medium">
+                <hstack gap="medium" alignment="center">
+                  <text size="medium" weight="bold">Username:</text>
+                  <text size="medium" weight="bold" color="white">
+                    {username ?? 'anonymous'}
+                  </text>
+                </hstack>
+                <hstack gap="medium" alignment="center">
+                  <text size="medium" weight="bold">Current score:</text>
+                  <text size="medium" weight="bold" color="white">
+                    {score ?? '0'} points
+                  </text>
+                </hstack>
+              </vstack>
             </hstack>
           </vstack>
-        </hstack>
-      </vstack>
           
-          <vstack backgroundColor="error" cornerRadius="small" padding="large" gap="medium">
-            <text weight="bold" size="large" color="white">{challenge?.title || 'Loading Challenge...'}</text>
-            <text color="white">{challenge?.scenario || 'Please wait while we load your cybersecurity challenge.'}</text>
+          <vstack backgroundColor="error" borderRadius="medium" padding="large" gap="large">
+            <text weight="bold" size="xlarge" color="white">{challenge?.title || 'Loading Challenge...'}</text>
+            <text size="medium" color="white">{challenge?.scenario || 'Please wait while we load your cybersecurity challenge.'}</text>
           </vstack>
           
-          <hstack alignment="middle center">
+          <vstack alignment="middle center" padding="medium">
             <button appearance="primary" size="large" onPress={() => webView.mount()}>
               Answer Challenge
             </button>
-          </hstack>
+          </vstack>
           
-          <text size="small" color="textSecondary" alignment="center">
-            Built as Cybersecurity Awareness Game
-          </text>
+          <vstack alignment="middle center" padding="small">
+            <text size="small" color="textSecondary" alignment="center">
+              Built as Reddit's Cybersecurity Awareness Game
+            </text>
+          </vstack>
         </vstack>
       </vstack>
     );
