@@ -1,53 +1,68 @@
-# RedditQuest
+# 🛡️ RedditQuest: Cybersecurity Awareness Game
 
-An interactive game promoting cybersecurity awareness through engaging challenges. Originally designed for Reddit's hackathon.
+A dynamic, interactive game promoting cybersecurity awareness through engaging Reddit-integrated challenges. Built for Reddit's hackathon using the Devvit platform.
 
-## Features
+<div align="center">
+  <img src="https://www.redditstatic.com/avatars/defaults/v2/avatar_default_1.png" alt="RedditQuest Logo" width="120" />
+  <h3>Learn. Play. Stay Safe Online.</h3>
+</div>
 
-- Interactive challenge system
-- Badge rewards for progress
-- Local progress tracking
-- Leaderboard system
-- Reddit-inspired interface
-- Custom post type for Reddit integration
-- Moderator tools menu item for easy access
+## 🌟 Features
 
-## Installation
+- **Interactive Challenges**: Solve real-world cybersecurity scenarios
+- **Score System**: Earn points for correct answers
+- **Badge Rewards**: Unlock achievements as you progress
+- **Progress Tracking**: Your scores are saved between sessions
+- **Leaderboard**: Compete with others in your community
+- **Reddit Integration**: Seamless experience within Reddit's platform
+- **Moderator Tools**: Easy post creation for subreddit moderators
 
-1. Clone the repository or download the ZIP file.
-2. Navigate to the project folder in your terminal.
-3. Install dependencies:
+## 🎮 Gameplay
 
-```bash
-npm install
-```
+RedditQuest presents you with practical cybersecurity scenarios you might encounter online, such as:
 
-## Running the Application
+- Suspicious friend requests
+- Potential phishing emails
+- Harassing comments
+- Offensive content
+- Accidental information exposure
 
-To start the development server:
+For each challenge, you'll choose from four possible actions:
+- 🚩 **Report**
+- 🚫 **Block**
+- 🗑️ **Delete**
+- 👀 **Ignore**
 
-```bash
-npm start
-```
+Choose correctly to earn points and level up your cybersecurity expertise!
 
-This will launch the application at http://localhost:3000
+## 🚀 Getting Started
 
-For testing the Reddit integration:
+### For Subreddit Moderators
 
-```bash
-devvit playtest <subreddit-name>
-```
+1. Install the RedditQuest app on your subreddit
+2. Use the "Create New CyberQuest Challenge" option in the moderator tools
+3. Engage your community with cybersecurity awareness!
 
-## Game Mechanics
+### For Developers
 
-- Complete challenges to earn points
-- Earn badges as you reach score thresholds
-- Track your progress and see how you rank on the leaderboard
-- Learn about online safety while having fun!
-- Create and interact with RedditQuest posts directly on Reddit
+#### Prerequisites
+- [Node.js](https://nodejs.org/) (v14+)
+- [npm](https://www.npmjs.com/) or [yarn](https://yarnpkg.com/)
+- [Devvit CLI](https://developers.reddit.com/docs/devvit)
+
+#### Installation
+
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/ayish1998/redditquest-app-game
+   cd redditquest-app-game
+
+### Game Interface Screenshots
+  <img src="./Screenshots/Home.png" alt="RedditQuest Screenshot" width="600" />
+   <img src="./Screenshots/Game.png" alt="RedditQuest Screenshot" width="600" />
+    <img src="./Screenshots/Correct.png" alt="RedditQuest Screenshot" width="600" />
+     <img src="./Screenshots/Wrong.png" alt="RedditQuest Screenshot" width="600" />
 
 
-## License
-
-MIT
-
+### License
+    MIT
