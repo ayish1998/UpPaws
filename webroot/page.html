@@ -6,19 +6,39 @@
       content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
     />
     <meta charset="UTF-8" />
-    <title>Web View Example</title>
+    <title>RedditQuest Cybersecurity Challenge</title>
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
-    <h1>This is your page.html</h1>
-    <h3>Your username is <span id="username">Guest</span></h3>
-    <h3>Current counter is at: <span id="counter">0</span></h3>
-    <div class="button-container">
-      <button id="btn-increase">Increase Counter ⬆️</button>
-      <button id="btn-decrease">Decrease Counter ⬇️</button>
+    <h1>Cybersecurity Challenge</h1>
+    <h3>Welcome, <span id="username">User</span>!</h3>
+    <h3>Your score: <span id="userScore">0</span> points</h3>
+    
+    <div class="challenge-card">
+      <h2 id="challengeTitle">Loading challenge...</h2>
+      <p id="challengeScenario">Please wait while we load your cybersecurity challenge.</p>
+      
+      <div id="answer-section">
+        <h3>How would you respond?</h3>
+        <div class="button-container">
+          <button id="btn-report">🚩 Report</button>
+          <button id="btn-block">🚫 Block</button>
+          <button id="btn-delete">🗑️ Delete</button>
+          <button id="btn-ignore">👀 Ignore</button>
+        </div>
+      </div>
+      
+      <div id="result-section" class="hidden">
+        <div id="result-message"></div>
+        <p id="explanation"></p>
+        <button id="btn-next">Back to Reddit</button>
+      </div>
     </div>
-    <h3>Last message from Devvit blocks:</h3>
-    <pre id="messageOutput"></pre>
+    
+    <div class="footer">
+      <p>Built for Reddit's Cybersecurity Awareness Hackathon</p>
+    </div>
+    
     <script type="application/javascript" src="script.js"></script>
   </body>
 </html>
