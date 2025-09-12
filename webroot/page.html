@@ -6,44 +6,111 @@
       content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
     />
     <meta charset="UTF-8" />
-    <title>AnimalQuest Trivia</title>
+    <title>AnimalQuest Puzzle</title>
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
-    <div id="ornaments"></div>
-    <h1>🐾 UpPaws: Animal Trivia</h1>
-    <h3>Welcome, <span id="username">User</span>!</h3>
-    <h3>Your score: <span id="userScore">0</span> points</h3>
-    <h4 id="userStreak" class="subtitle hidden">Streak: <span id="streakVal">0</span> 🔥</h4>
-    <div id="leaderboard" class="leaderboard hidden"></div>
-    
-    <div class="hero">🦁 🐼 🦊 🦒 🦉 🐯</div>
+    <div id="gameRoot" class="game-root">
+      <div class="bg-layer">
+        <div id="ornaments"></div>
+      </div>
 
-    <div class="challenge-card">
-      <h2 id="challengeTitle">Loading question...</h2>
-      <p id="challengeScenario">Please wait while we load your animal trivia question.</p>
-      <div class="progress" id="progress"><div class="bar" id="progressBar"></div></div>
-      
-      <div id="answer-section">
-        <h3>Choose the correct answer:</h3>
-        <div class="button-container" id="options"></div>
-      </div>
-      
-      <div id="result-section" class="hidden">
-        <div id="result-message"></div>
-        <p id="explanation"></p>
-        <div id="shareRow" class="hidden">
-          <button id="btn-share">Share your win</button>
+      <!-- HUD -->
+        <div class="hud">
+          <div class="badge">u/<span id="username">User</span></div>
+          <div class="spacer"></div>
+          <button id="btn-leaderboard" class="badge btn-leaderboard">🏆</button>
+          <div class="badge">🔥 <span id="streakVal">0</span></div>
+          <div class="badge">⏱ <span id="timerVal">15</span>s</div>
+          <div class="badge">⭐ <span id="userScore">0</span></div>
+          <button id="muteToggle" class="badge btn-muted">🔊</button>
         </div>
-        <button id="btn-next">Back to Reddit</button>
+
+      <!-- Center Panel -->
+      <div class="panel">
+        <div class="panel-header">
+          <div class="emoji" id="emoji">🦁</div>
+          <div class="title" id="challengeTitle">Loading...</div>
+          <div class="subtitle" id="challengeScenario">Preparing your daily puzzle</div>
+        </div>
+
+        <div class="progress" id="progress"><div class="bar" id="progressBar"></div></div>
+
+        <div id="puzzle-section" class="content">
+          <div class="hint" id="hint">Guess the animal</div>
+          <div class="arcade-hud hidden" id="arcadeHud">
+            <div class="badge">❤️ <span id="lives">3</span></div>
+            <div class="badge">x<span id="combo">1</span></div>
+            <div class="badge">🎯 <span id="arcadeScore">0</span></div>
+          </div>
+          <div class="answer-slots" id="answerSlots"></div>
+          <div class="letter-bank" id="letterBank"></div>
+          <div class="actions">
+            <button id="btn-power-freeze" class="btn-secondary">❄️ Freeze</button>
+            <button id="btn-power-reveal" class="btn-secondary">✨ Reveal</button>
+            <button id="btn-power-shuffle" class="btn-secondary">🔀 Shuffle</button>
+            <button id="btn-hint" class="btn-secondary">💡 Hint (-2 pts)</button>
+            <button id="btn-clear" class="btn-secondary">Clear</button>
+            <button id="btn-submit" class="btn-primary">Submit</button>
+          </div>
+        </div>
+
+        <div id="result-section" class="content hidden">
+          <div id="result-message" class="result"></div>
+          <p id="explanation"></p>
+          <div id="shareRow" class="hidden">
+            <button id="btn-share" class="btn-primary">Share</button>
+          </div>
+          <button id="btn-next" class="btn-primary">Back to Reddit</button>
+        </div>
       </div>
+
+      <!-- Overlays -->
+      <div id="startOverlay" class="overlay visible">
+        <div class="overlay-card">
+          <div class="overlay-title">UpPaws: Animal Puzzle</div>
+          <div class="overlay-sub">Daily animal challenge. Beat the timer for bonus points!</div>
+          <div style="display:flex; gap:.5rem; justify-content:center; flex-wrap:wrap;">
+            <button id="btn-start" class="btn-primary">Play Daily</button>
+            <button id="btn-arcade" class="btn-secondary">Arcade Mode</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="countdown" class="overlay hidden">
+        <div class="overlay-card count-card">
+          <div id="countVal" class="count-num">3</div>
+        </div>
+      </div>
+
+      <div id="leaderboardOverlay" class="overlay hidden">
+        <div class="overlay-card leaderboard-card">
+          <div class="leaderboard-header">
+            <h2>🏆 Leaderboards</h2>
+            <button id="btn-close-leaderboard" class="btn-close">✕</button>
+          </div>
+          <div class="leaderboard-tabs">
+            <button class="tab-btn active" data-tab="daily">Daily</button>
+            <button class="tab-btn" data-tab="arcade">Arcade</button>
+            <button class="tab-btn" data-tab="streaks">Streaks</button>
+          </div>
+          <div class="leaderboard-content">
+            <div id="leaderboard-daily" class="leaderboard-tab active">
+              <div class="leaderboard-list" id="daily-list"></div>
+            </div>
+            <div id="leaderboard-arcade" class="leaderboard-tab">
+              <div class="leaderboard-list" id="arcade-list"></div>
+            </div>
+            <div id="leaderboard-streaks" class="leaderboard-tab">
+              <div class="leaderboard-list" id="streaks-list"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="toast" class="toast hidden"></div>
     </div>
-    
-    <div class="footer">
-      <p>Built as Reddit's Animal Trivia Game</p>
-      <button id="muteToggle" class="muter">🔊 Sound</button>
-    </div>
-    
+
     <script type="application/javascript" src="script.js"></script>
   </body>
 </html>

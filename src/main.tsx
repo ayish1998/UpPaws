@@ -9,48 +9,15 @@ Devvit.configure({
   redis: true,
 });
 
-// Animal trivia questions collection
-const challenges = [
-  {
-    id: "a1",
-    title: "Animal Trivia",
-    question: "Which mammal is known to have the most powerful bite?",
-    options: ["Lion", "Hippopotamus", "Grizzly Bear", "Tiger"],
-    correctIndex: 1,
-    explanation: "The hippopotamus has one of the most powerful bites among land mammals, reaching over 1,800 PSI."
-  },
-  {
-    id: "a2",
-    title: "Animal Trivia",
-    question: "What is the fastest bird in the world?",
-    options: ["Golden Eagle", "Peregrine Falcon", "Albatross", "Swift"],
-    correctIndex: 1,
-    explanation: "The peregrine falcon can exceed 200 mph (320 km/h) in a hunting dive."
-  },
-  {
-    id: "a3",
-    title: "Animal Trivia",
-    question: "Which animal can sleep standing up and lying down?",
-    options: ["Horse", "Giraffe", "Cow", "All of the above"],
-    correctIndex: 3,
-    explanation: "Horses, giraffes, and cows can all sleep standing, and they also lie down for deeper sleep."
-  },
-  {
-    id: "a4",
-    title: "Animal Trivia",
-    question: "What is a group of crows called?",
-    options: ["A pack", "A murder", "A colony", "A gaggle"],
-    correctIndex: 1,
-    explanation: "A group of crows is famously called a 'murder.'"
-  },
-  {
-    id: "a5",
-    title: "Animal Trivia",
-    question: "Which sea creature has three hearts?",
-    options: ["Octopus", "Dolphin", "Shark", "Seal"],
-    correctIndex: 0,
-    explanation: "Octopuses have three hearts: two pump blood to the gills, and one to the rest of the body."
-  }
+// Daily Animal Puzzle bank (emoji hint + answer + fun fact)
+const animals = [
+  { answer: 'HIPPOPOTAMUS', emoji: '🦛', fact: 'A hippo’s bite can exceed 1,800 PSI — among land’s strongest.' },
+  { answer: 'FALCON', emoji: '🦅', fact: 'Peregrine falcons dive over 200 mph, fastest in the animal kingdom.' },
+  { answer: 'GIRAFFE', emoji: '🦒', fact: 'Giraffes sleep less than 2 hours a day, often in short naps.' },
+  { answer: 'OCTOPUS', emoji: '🐙', fact: 'Octopuses have three hearts and blue copper-based blood.' },
+  { answer: 'PANDA', emoji: '🐼', fact: 'Giant pandas spend 10–16 hours a day eating bamboo.' },
+  { answer: 'TIGER', emoji: '🐯', fact: 'A tiger’s stripes are unique like human fingerprints.' },
+  { answer: 'CROCODILE', emoji: '🐊', fact: 'Crocodiles can go through 4,000 teeth in a lifetime.' },
 ];
 
 // Daily challenge helpers
@@ -62,18 +29,35 @@ function getDateKey(): string {
   return `${yyyy}-${mm}-${dd}`;
 }
 
-function getDailyChallenge() {
-  // Use the date key as a simple deterministic seed to pick an index
+function shuffle<T>(arr: T[]): T[] {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function getDailyPuzzle() {
   const key = getDateKey();
   let hash = 0;
   for (let i = 0; i < key.length; i++) hash = (hash * 31 + key.charCodeAt(i)) >>> 0;
-  const index = hash % challenges.length;
-  return challenges[index];
+  const index = hash % animals.length;
+  const base = animals[index];
+  const letters = shuffle(base.answer.split(''));
+  return {
+    emoji: base.emoji,
+    hint: 'Guess the animal from the emoji and letters.',
+    answerLength: base.answer.length,
+    letters,
+    fact: base.fact,
+    answer: base.answer,
+  };
 }
 
 // Add a custom post type to Devvit
 Devvit.addCustomPostType({
-  name: 'AnimalQuest Game',
+  name: 'AnimalQuest Puzzle',
   height: 'tall',
   render: (context) => {
     // Load username with useAsync hook
@@ -95,18 +79,13 @@ Devvit.addCustomPostType({
       return Number(s ?? 0);
     });
 
-    // Get current challenge for this post
-    const [challenge] = useState(async () => {
-      // Try to get existing challenge for this post
-      const existingChallenge = await context.redis.get(`challenge_${context.postId}`);
-      if (existingChallenge) {
-        return JSON.parse(existingChallenge);
-      }
-      
-      // Create today's challenge for this post (same for everyone today)
-      const newChallenge = getDailyChallenge();
-      await context.redis.set(`challenge_${context.postId}`, JSON.stringify(newChallenge));
-      return newChallenge;
+    // Get current puzzle for this post (daily)
+    const [puzzle] = useState(async () => {
+      const existing = await context.redis.get(`puzzle_${context.postId}`);
+      if (existing) return JSON.parse(existing);
+      const p = getDailyPuzzle();
+      await context.redis.set(`puzzle_${context.postId}`, JSON.stringify(p));
+      return p;
     });
 
     // Function to update score
@@ -180,77 +159,145 @@ Devvit.addCustomPostType({
           switch (messageType) {
             case 'webViewReady':
               // Send initial data to the web view
-              // Load leaderboard for initial payload
               const leaderboardData = await context.redis.get('leaderboard');
               const leaderboard = leaderboardData ? JSON.parse(leaderboardData) : [];
+              // Arcade best
+              const arcadeBestRaw = username ? await context.redis.get(`arcade_best_${username}`) : null;
+              const arcadeBest = arcadeBestRaw ? Number(arcadeBestRaw) : 0;
+              // Arcade leaderboard
+              const arcadeLeaderboardData = await context.redis.get('arcade_leaderboard');
+              const arcadeLeaderboard = arcadeLeaderboardData ? JSON.parse(arcadeLeaderboardData) : [];
+              // Streak leaderboard
+              const streakLeaderboardData = await context.redis.get('streak_leaderboard');
+              const streakLeaderboard = streakLeaderboardData ? JSON.parse(streakLeaderboardData) : [];
               webView.postMessage({
                 type: 'initialData',
                 data: {
                   username: username,
-                  challenge: challenge,
+                  puzzle: {
+                    emoji: puzzle.emoji,
+                    hint: puzzle.hint,
+                    answerLength: puzzle.answerLength,
+                    letters: puzzle.letters,
+                    fact: puzzle.fact,
+                    answer: puzzle.answer,
+                  },
                   userScore: score,
                   userStreak: streak,
-                  leaderboard
+                  leaderboard,
+                  arcadeBest,
+                  arcadeLeaderboard,
+                  streakLeaderboard
                 },
               });
               break;
-            case 'submitAnswer':
-              if (!message.data || typeof message.data.selectedIndex !== 'number') {
-                console.error('Submit answer message missing selectedIndex', message);
-                return;
-              }
-              
-              // Check if the answer is correct
-              const isCorrect = message.data.selectedIndex === challenge.correctIndex;
-              
-              // Update user score if correct and not already awarded today
-              let explanationText = challenge.explanation;
-              if (isCorrect && username) {
-                const dateKey = getDateKey();
-                const awardedKey = `user_scored_${username}_${dateKey}`;
-                const alreadyAwarded = await context.redis.get(awardedKey);
-                if (!alreadyAwarded) {
-                  const newScore = score + 5;
-                  await updateScore(newScore);
-                  await context.redis.set(awardedKey, '1');
-                  const newStreak = await updateStreakOnFirstDailyCorrect();
-                  // Send score update
-                  webView.postMessage({
-                    type: 'updateScore',
-                    data: { newScore }
-                  });
-                  if (newStreak !== null) {
-                    webView.postMessage({ type: 'updateStreak', data: { newStreak } });
-                  }
-                } else {
-                  explanationText = `${explanationText} You've already earned today's points. Come back tomorrow!`;
-                }
-              }
-              
-              // Send answer result to the web view
+            case 'getArcadePuzzle': {
+              // For arcade: generate a fresh puzzle (not tied to date) and optionally scale difficulty
+              // Basic scaling: longer answers at higher difficulty
+              const pool = animals.slice().sort((a, b) => a.answer.length - b.answer.length);
+              const difficulty = Math.max(1, Math.min(5, Number(message.data?.difficulty ?? 1)));
+              const minLen = Math.min(12, 3 + difficulty * 2);
+              const candidates = pool.filter(a => a.answer.length >= minLen);
+              const base = (candidates.length ? candidates : pool)[Math.floor(Math.random() * (candidates.length ? candidates.length : pool.length))];
+              const letters = base.answer.split('').sort(() => Math.random() - 0.5);
               webView.postMessage({
-                type: 'answerResult',
-                data: {
-                  isCorrect,
-                  explanation: explanationText,
-                  correctIndex: challenge.correctIndex
-                }
+                type: 'nextArcadePuzzle',
+                data: { puzzle: { emoji: base.emoji, hint: 'Arcade: beat the clock!', answerLength: base.answer.length, letters, fact: base.fact, answer: base.answer } }
               });
               break;
-            case 'getNextChallenge':
-              // Always send today's challenge (daily mode)
-              const newChallenge = getDailyChallenge();
-              
-              // Update the challenge in Redis for this post
-              await context.redis.set(`challenge_${context.postId}`, JSON.stringify(newChallenge));
-              
-              // Send the new challenge to the web view
-              webView.postMessage({
-                type: 'nextChallenge',
-                data: {
-                  challenge: newChallenge
+            }
+            case 'arcadeGameOver': {
+              const finalScore = Number(message.data?.finalScore ?? 0);
+              if (username) {
+                const bestRaw = await context.redis.get(`arcade_best_${username}`);
+                const best = bestRaw ? Number(bestRaw) : 0;
+                if (finalScore > best) {
+                  await context.redis.set(`arcade_best_${username}`, String(finalScore));
+                  webView.postMessage({ type: 'updateArcadeBest', data: { best: finalScore } });
+                  
+                  // Update arcade leaderboard
+                  const arcadeLeaderboardData = await context.redis.get('arcade_leaderboard');
+                  let arcadeLeaderboard = arcadeLeaderboardData ? JSON.parse(arcadeLeaderboardData) : [];
+                  const userIndex = arcadeLeaderboard.findIndex((entry: any) => entry.username === username);
+                  if (userIndex >= 0) {
+                    arcadeLeaderboard[userIndex].best = finalScore;
+                  } else {
+                    arcadeLeaderboard.push({ username, best: finalScore });
+                  }
+                  arcadeLeaderboard.sort((a: any, b: any) => b.best - a.best);
+                  await context.redis.set('arcade_leaderboard', JSON.stringify(arcadeLeaderboard));
                 }
+              }
+              break;
+            }
+            case 'getLeaderboard': {
+              // Send fresh leaderboard data
+              const dailyData = await context.redis.get('leaderboard');
+              const daily = dailyData ? JSON.parse(dailyData) : [];
+              const arcadeData = await context.redis.get('arcade_leaderboard');
+              const arcade = arcadeData ? JSON.parse(arcadeData) : [];
+              const streakData = await context.redis.get('streak_leaderboard');
+              const streaks = streakData ? JSON.parse(streakData) : [];
+              webView.postMessage({
+                type: 'leaderboardData',
+                data: { daily, arcade, streaks }
               });
+              break;
+            }
+            case 'submitGuess':
+              if (!message.data || typeof message.data.guess !== 'string') {
+                console.error('submitGuess missing guess', message);
+                return;
+              }
+              {
+                const userGuess = (message.data.guess || '').toUpperCase().trim();
+                const secondsTaken = Number(message.data.secondsTaken ?? 0);
+                const usedHint = Boolean(message.data.usedHint);
+                const todayPuzzleRaw = await context.redis.get(`puzzle_${context.postId}`);
+                const todayPuzzle = todayPuzzleRaw ? JSON.parse(todayPuzzleRaw) : getDailyPuzzle();
+                const isCorrect = userGuess === todayPuzzle.answer;
+
+                let fact = todayPuzzle.fact;
+                // scoring: base 5 for first correct of the day, + time bonus up to +5, -2 if used hint
+                if (isCorrect && username) {
+                  const dateKey = getDateKey();
+                  const awardedKey = `user_scored_${username}_${dateKey}`;
+                  const alreadyAwarded = await context.redis.get(awardedKey);
+                  if (!alreadyAwarded) {
+                    const timeBonus = Math.max(0, Math.min(5, Math.ceil((15 - Math.min(15, secondsTaken)) / 3)));
+                    const hintPenalty = usedHint ? 2 : 0;
+                    const gained = Math.max(1, 5 + timeBonus - hintPenalty);
+                    const newScore = score + gained;
+                    await updateScore(newScore);
+                    await context.redis.set(awardedKey, '1');
+                    const newStreak = await updateStreakOnFirstDailyCorrect();
+                    webView.postMessage({ type: 'updateScore', data: { newScore } });
+                    if (newStreak !== null) {
+                      webView.postMessage({ type: 'updateStreak', data: { newStreak } });
+                      
+                      // Update streak leaderboard
+                      const streakLeaderboardData = await context.redis.get('streak_leaderboard');
+                      let streakLeaderboard = streakLeaderboardData ? JSON.parse(streakLeaderboardData) : [];
+                      const userIndex = streakLeaderboard.findIndex((entry: any) => entry.username === username);
+                      if (userIndex >= 0) {
+                        streakLeaderboard[userIndex].streak = newStreak;
+                      } else {
+                        streakLeaderboard.push({ username, streak: newStreak });
+                      }
+                      streakLeaderboard.sort((a: any, b: any) => b.streak - a.streak);
+                      await context.redis.set('streak_leaderboard', JSON.stringify(streakLeaderboard));
+                    }
+                    fact = `${fact} You earned ${gained} pts${usedHint ? ' (hint -2)' : ''}${timeBonus ? ` (+${timeBonus} time bonus)` : ''}.`;
+                  } else {
+                    fact = `${fact} You've already earned today's points. Come back tomorrow!`;
+                  }
+                }
+
+                webView.postMessage({
+                  type: 'guessResult',
+                  data: { isCorrect, fact, answer: todayPuzzle.answer },
+                });
+              }
               break;
             case 'close':
               // Close the web view when explicitly requested
@@ -270,128 +317,46 @@ Devvit.addCustomPostType({
 
     // Render the custom post type
     return (
-      <vstack grow padding="large">
-        <vstack grow gap="large">
-          <vstack alignment="middle center" gap="small">
-            <text size="xlarge" weight="bold">
-              AnimalQuest Trivia
-            </text>
-            <text size="medium">Test your animal knowledge</text>
+      <vstack grow padding="none">
+        <vstack grow padding="large" gap="large" alignment="top center">
+          {/* Hero Header */}
+          <vstack alignment="middle center" padding="medium" gap="small">
+            <text size="xlarge" weight="bold" color="#FF6B35">{puzzle ? `${puzzle.emoji} AnimalQuest` : 'AnimalQuest'}</text>
+            <text size="medium" color="#4A5568">Guess the animal from emoji + letters</text>
           </vstack>
           
-          <vstack borderRadius="medium" padding="medium">
-            <hstack gap="medium" alignment="center middle" padding="small">
-              <image url="https://www.redditstatic.com/avatars/defaults/v2/avatar_default_1.png" size="small" />
-              <vstack gap="medium">
-                <hstack gap="medium" alignment="center">
-                  <text size="medium" weight="bold">Username:</text>
-                  <text size="medium" weight="bold">
-                    {username ?? 'anonymous'}
-                  </text>
-                </hstack>
-                <hstack gap="medium" alignment="center">
-                  <text size="medium" weight="bold">Current score:</text>
-                  <text size="medium" weight="bold">
-                    {score ?? '0'} points
-                  </text>
-                </hstack>
-                <hstack gap="medium" alignment="center">
-                  <text size="medium" weight="bold">Daily streak:</text>
-                  <text size="medium" weight="bold">
-                    {streak ?? '0'} 🔥
-                  </text>
-                </hstack>
-              </vstack>
+          {/* Stats Row */}
+          <hstack gap="small" alignment="center middle">
+            <hstack borderRadius="full" padding="small" backgroundColor="#FF6B35" gap="xsmall" alignment="center middle">
+              <image url="https://www.redditstatic.com/avatars/defaults/v2/avatar_default_1.png" size="xsmall" />
+              <text size="small" weight="bold" color="white">u/{username ?? 'anonymous'}</text>
             </hstack>
+            <hstack borderRadius="full" padding="small" backgroundColor="#FFD700" gap="xsmall" alignment="center middle">
+              <text size="small" weight="bold" color="#1A202C">⭐ {score ?? '0'}</text>
+            </hstack>
+            <hstack borderRadius="full" padding="small" backgroundColor="#FF4444" gap="xsmall" alignment="center middle">
+              <text size="small" weight="bold" color="white">🔥 {streak ?? '0'}</text>
+            </hstack>
+          </hstack>
+          
+          {/* Game Card */}
+          <vstack borderRadius="large" padding="large" gap="large" backgroundColor="#F7FAFC" width="full">
+            <vstack alignment="middle center" gap="medium">
+              <text weight="bold" size="xlarge" color="#2D3748">{puzzle ? `${puzzle.emoji} Daily Animal` : 'Loading Puzzle...'}</text>
+              <text size="medium" alignment="center" color="#4A5568">{puzzle ? 'Tap Play to start the daily puzzle.' : 'Please wait while we load your animal puzzle.'}</text>
+            </vstack>
+            <vstack alignment="middle center">
+              <button appearance="primary" size="large" onPress={() => webView.mount()}>
+                🎮 Play Puzzle
+              </button>
+            </vstack>
           </vstack>
           
-          <vstack borderRadius="medium" padding="large" gap="large">
-            <text weight="bold" size="xlarge">{challenge?.title || 'Loading Challenge...'}</text>
-            <text size="medium">{challenge?.question || 'Please wait while we load your animal trivia question.'}</text>
-          </vstack>
-          
-          <vstack alignment="middle center" padding="medium">
-            <button appearance="primary" size="large" onPress={() => webView.mount()}>
-              Play Trivia
-            </button>
-          </vstack>
-          
-          <vstack alignment="middle center" padding="small">
-            <text size="small" alignment="center">
-              Built as Reddit's Animal Trivia Game
-            </text>
-          </vstack>
+          {/* Footer */}
+          <text size="xsmall" alignment="center" color="#718096">Built for Reddit — UpPaws</text>
         </vstack>
       </vstack>
     );
   },
 });
-
-// Process comment-based answers (A/B/C/D or 1/2/3/4)
-Devvit.addTrigger({
-  event: 'CommentSubmit',
-  async onEvent(event, context) {
-    if (event.type !== 'CommentSubmit') return;
-    
-    const comment = event.comment;
-    const postId = comment.postId;
-    const commentBody = comment.body.toLowerCase().trim();
-    
-    // Map common formats to indices
-    const mapToIndex = (body: string): number | null => {
-      if (body === 'a' || body === '1') return 0;
-      if (body === 'b' || body === '2') return 1;
-      if (body === 'c' || body === '3') return 2;
-      if (body === 'd' || body === '4') return 3;
-      return null;
-    };
-    const selectedIndex = mapToIndex(commentBody);
-    if (selectedIndex === null) return;
-    
-    // Get the challenge for this post
-    const challengeData = await context.redis.get(`challenge_${postId}`);
-    if (!challengeData) return;
-    
-    const challenge = JSON.parse(challengeData);
-    const isCorrect = selectedIndex === challenge.correctIndex;
-    
-    // Update user score if we have a user
-    const username = comment.author;
-    if (username && isCorrect) {
-      const dateKey = getDateKey();
-      const awardedKey = `user_scored_${username}_${dateKey}`;
-      const alreadyAwarded = await context.redis.get(awardedKey);
-      if (!alreadyAwarded) {
-        // Get current score
-        const currentScoreData = await context.redis.get(`user_score_${username}`);
-        const currentScore = Number(currentScoreData ?? 0);
-        const newScore = currentScore + 5;
-        await context.redis.set(`user_score_${username}`, newScore.toString());
-        await context.redis.set(awardedKey, '1');
-      }
-    }
-    
-    // Reply with feedback
-    const letters = ['A', 'B', 'C', 'D'];
-    let replyText = '';
-    if (isCorrect) {
-      const dateKey = getDateKey();
-      const awardedKey = `user_scored_${comment.author}_${dateKey}`;
-      const alreadyAwarded = await context.redis.get(awardedKey);
-      if (alreadyAwarded) {
-        replyText = `✅ Correct! ${challenge.explanation} You've already earned today's points. Come back tomorrow!`;
-      } else {
-        replyText = `✅ Correct! ${challenge.explanation} You've earned 5 points.`;
-      }
-    } else {
-      replyText = `❌ Not quite. The correct answer was "${letters[challenge.correctIndex]}". ${challenge.explanation}`;
-    }
-    
-    await context.reddit.submitComment({
-      parentId: comment.id,
-      content: replyText
-    });
-  }
-});
-
 export default Devvit;

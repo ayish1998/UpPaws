@@ -4,43 +4,59 @@ export type DevvitMessage =
       type: 'initialData';
       data: {
         username: string;
-        challenge: {
-          title: string;
-          question: string;
-          options: string[];
-          correctIndex: number;
-          explanation: string;
+        puzzle: {
+          emoji: string;
+          hint: string;
+          answerLength: number;
+          letters: string[];
+          fact: string;
+          answer: string;
         };
         userScore: number;
         userStreak?: number;
         leaderboard?: Array<{ username: string; score: number }>;
+        arcadeBest?: number;
+        arcadeLeaderboard?: Array<{ username: string; best: number }>;
+        streakLeaderboard?: Array<{ username: string; streak: number }>;
       };
     }
   | { type: 'updateScore'; data: { newScore: number } }
   | { type: 'updateStreak'; data: { newStreak: number } }
   | {
-      type: 'answerResult';
-      data: { isCorrect: boolean; explanation: string; correctIndex: number };
+      type: 'guessResult';
+      data: { isCorrect: boolean; fact: string; answer: string };
     }
   | {
-      type: 'nextChallenge';
+      type: 'nextArcadePuzzle';
       data: {
-        challenge: {
-          title: string;
-          question: string;
-          options: string[];
-          correctIndex: number;
-          explanation: string;
+        puzzle: {
+          emoji: string;
+          hint: string;
+          answerLength: number;
+          letters: string[];
+          fact: string;
+          answer: string;
         };
+      };
+    }
+  | { type: 'updateArcadeBest'; data: { best: number } }
+  | {
+      type: 'leaderboardData';
+      data: {
+        daily: Array<{ username: string; score: number }>;
+        arcade: Array<{ username: string; best: number }>;
+        streaks: Array<{ username: string; streak: number }>;
       };
     };
 
 /** Message from the web view to Devvit. */
 export type WebViewMessage =
   | { type: 'webViewReady' }
-  | { type: 'submitAnswer'; data: { selectedIndex: number } }
-  | { type: 'getNextChallenge' }
-  | { type: 'close' };
+  | { type: 'submitGuess'; data: { guess: string; secondsTaken: number; usedHint: boolean } }
+  | { type: 'close' }
+  | { type: 'getArcadePuzzle'; data?: { difficulty?: number } }
+  | { type: 'arcadeGameOver'; data: { finalScore: number } }
+  | { type: 'getLeaderboard' };
 
 /**
  * Web view MessageEvent listener data type. The Devvit API wraps all messages
