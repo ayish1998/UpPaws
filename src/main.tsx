@@ -9,42 +9,47 @@ Devvit.configure({
   redis: true,
 });
 
-// Cybersecurity challenges collection
+// Animal trivia questions collection
 const challenges = [
   {
-    id: "c1",
-    title: "Suspicious Friend Request",
-    scenario: "You receive a friend request from someone claiming to be an old school friend, but their profile was created yesterday and has no mutual friends. What should you do?",
-    correctAnswer: "ignore",
-    explanation: "It's best to ignore friend requests from suspicious profiles with no mutual connections. This could be an attempt to gather your personal information."
+    id: "a1",
+    title: "Animal Trivia",
+    question: "Which mammal is known to have the most powerful bite?",
+    options: ["Lion", "Hippopotamus", "Grizzly Bear", "Tiger"],
+    correctIndex: 1,
+    explanation: "The hippopotamus has one of the most powerful bites among land mammals, reaching over 1,800 PSI."
   },
   {
-    id: "c2",
-    title: "Strange Email Link",
-    scenario: "You receive an email claiming to be from your bank asking you to click a link to verify your account details. The email address looks unusual. What should you do?",
-    correctAnswer: "report",
-    explanation: "This is a classic phishing attempt. You should report it to your email provider and never click suspicious links claiming to be from financial institutions."
+    id: "a2",
+    title: "Animal Trivia",
+    question: "What is the fastest bird in the world?",
+    options: ["Golden Eagle", "Peregrine Falcon", "Albatross", "Swift"],
+    correctIndex: 1,
+    explanation: "The peregrine falcon can exceed 200 mph (320 km/h) in a hunting dive."
   },
   {
-    id: "c3",
-    title: "Harassing Comments",
-    scenario: "A user is repeatedly leaving threatening and abusive comments on your posts. What's the best action to take?",
-    correctAnswer: "block",
-    explanation: "Blocking the user prevents them from interacting with your content, which is appropriate for repeated harassment. You may also want to report them if the content violates platform rules."
+    id: "a3",
+    title: "Animal Trivia",
+    question: "Which animal can sleep standing up and lying down?",
+    options: ["Horse", "Giraffe", "Cow", "All of the above"],
+    correctIndex: 3,
+    explanation: "Horses, giraffes, and cows can all sleep standing, and they also lie down for deeper sleep."
   },
   {
-    id: "c4",
-    title: "Offensive Content",
-    scenario: "You come across a post containing hate speech that violates Reddit's content policy. What should you do?",
-    correctAnswer: "report",
-    explanation: "Content that violates platform policies should be reported so moderators can review and take appropriate action."
+    id: "a4",
+    title: "Animal Trivia",
+    question: "What is a group of crows called?",
+    options: ["A pack", "A murder", "A colony", "A gaggle"],
+    correctIndex: 1,
+    explanation: "A group of crows is famously called a 'murder.'"
   },
   {
-    id: "c5",
-    title: "Accidental Private Information",
-    scenario: "You notice you accidentally included your phone number in a public comment. What should you do?",
-    correctAnswer: "delete",
-    explanation: "When you accidentally share personal information, deleting the content quickly is the best way to minimize exposure."
+    id: "a5",
+    title: "Animal Trivia",
+    question: "Which sea creature has three hearts?",
+    options: ["Octopus", "Dolphin", "Shark", "Seal"],
+    correctIndex: 0,
+    explanation: "Octopuses have three hearts: two pump blood to the gills, and one to the rest of the body."
   }
 ];
 
@@ -56,7 +61,7 @@ function getRandomChallenge() {
 
 // Add a custom post type to Devvit
 Devvit.addCustomPostType({
-  name: 'CyberQuest Game',
+  name: 'AnimalQuest Game',
   height: 'tall',
   render: (context) => {
     // Load username with useAsync hook
@@ -145,13 +150,13 @@ Devvit.addCustomPostType({
               });
               break;
             case 'submitAnswer':
-              if (!message.data || !message.data.answer) {
-                console.error('Submit answer message missing answer data', message);
+              if (!message.data || typeof message.data.selectedIndex !== 'number') {
+                console.error('Submit answer message missing selectedIndex', message);
                 return;
               }
               
               // Check if the answer is correct
-              const isCorrect = message.data.answer === challenge.correctAnswer;
+              const isCorrect = message.data.selectedIndex === challenge.correctIndex;
               
               // Update user score if correct
               if (isCorrect && username) {
@@ -171,7 +176,7 @@ Devvit.addCustomPostType({
                 data: {
                   isCorrect,
                   explanation: challenge.explanation,
-                  correctAnswer: challenge.correctAnswer
+                  correctIndex: challenge.correctIndex
                 }
               });
               break;
@@ -212,9 +217,9 @@ Devvit.addCustomPostType({
         <vstack grow gap="large">
           <vstack alignment="middle center" gap="small">
             <text size="xlarge" weight="bold" color="brand">
-              RedditQuest Cybersecurity Challenge
+              AnimalQuest Trivia
             </text>
-            <text size="medium">Test your online safety knowledge</text>
+            <text size="medium">Test your animal knowledge</text>
           </vstack>
           
           <vstack backgroundColor="error" borderRadius="medium" padding="medium">
@@ -239,18 +244,18 @@ Devvit.addCustomPostType({
           
           <vstack backgroundColor="error" borderRadius="medium" padding="large" gap="large">
             <text weight="bold" size="xlarge" color="white">{challenge?.title || 'Loading Challenge...'}</text>
-            <text size="medium" color="white">{challenge?.scenario || 'Please wait while we load your cybersecurity challenge.'}</text>
+            <text size="medium" color="white">{challenge?.question || 'Please wait while we load your animal trivia question.'}</text>
           </vstack>
           
           <vstack alignment="middle center" padding="medium">
             <button appearance="primary" size="large" onPress={() => webView.mount()}>
-              Answer Challenge
+              Play Trivia
             </button>
           </vstack>
           
           <vstack alignment="middle center" padding="small">
             <text size="small" color="textSecondary" alignment="center">
-              Built as Reddit's Cybersecurity Awareness Game
+              Built as Reddit's Animal Trivia Game
             </text>
           </vstack>
         </vstack>
@@ -259,7 +264,7 @@ Devvit.addCustomPostType({
   },
 });
 
-// Process comment-based answers
+// Process comment-based answers (A/B/C/D or 1/2/3/4)
 Devvit.addTrigger({
   event: 'CommentSubmit',
   async onEvent(event, context) {
@@ -269,16 +274,23 @@ Devvit.addTrigger({
     const postId = comment.postId;
     const commentBody = comment.body.toLowerCase().trim();
     
-    // Check if this is a valid action
-    const validActions = ['report', 'block', 'delete', 'ignore'];
-    if (!validActions.includes(commentBody)) return;
+    // Map common formats to indices
+    const mapToIndex = (body: string): number | null => {
+      if (body === 'a' || body === '1') return 0;
+      if (body === 'b' || body === '2') return 1;
+      if (body === 'c' || body === '3') return 2;
+      if (body === 'd' || body === '4') return 3;
+      return null;
+    };
+    const selectedIndex = mapToIndex(commentBody);
+    if (selectedIndex === null) return;
     
     // Get the challenge for this post
     const challengeData = await context.redis.get(`challenge_${postId}`);
     if (!challengeData) return;
     
     const challenge = JSON.parse(challengeData);
-    const isCorrect = commentBody === challenge.correctAnswer;
+    const isCorrect = selectedIndex === challenge.correctIndex;
     
     // Update user score if we have a user
     const username = comment.author;
@@ -293,9 +305,10 @@ Devvit.addTrigger({
     }
     
     // Reply with feedback
+    const letters = ['A', 'B', 'C', 'D'];
     const replyText = isCorrect 
       ? `✅ Correct! ${challenge.explanation} You've earned 5 points.`
-      : `❌ Not quite. The correct answer was "${challenge.correctAnswer}". ${challenge.explanation}`;
+      : `❌ Not quite. The correct answer was "${letters[challenge.correctIndex]}". ${challenge.explanation}`;
     
     await context.reddit.submitComment({
       parentId: comment.id,

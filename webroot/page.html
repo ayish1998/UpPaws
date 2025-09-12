@@ -6,26 +6,21 @@
       content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
     />
     <meta charset="UTF-8" />
-    <title>RedditQuest Cybersecurity Challenge</title>
+    <title>AnimalQuest Trivia</title>
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
-    <h1>Cybersecurity Challenge</h1>
+    <h1>Animal Trivia</h1>
     <h3>Welcome, <span id="username">User</span>!</h3>
     <h3>Your score: <span id="userScore">0</span> points</h3>
     
     <div class="challenge-card">
-      <h2 id="challengeTitle">Loading challenge...</h2>
-      <p id="challengeScenario">Please wait while we load your cybersecurity challenge.</p>
+      <h2 id="challengeTitle">Loading question...</h2>
+      <p id="challengeScenario">Please wait while we load your animal trivia question.</p>
       
       <div id="answer-section">
-        <h3>How would you respond?</h3>
-        <div class="button-container">
-          <button id="btn-report">🚩 Report</button>
-          <button id="btn-block">🚫 Block</button>
-          <button id="btn-delete">🗑️ Delete</button>
-          <button id="btn-ignore">👀 Ignore</button>
-        </div>
+        <h3>Choose the correct answer:</h3>
+        <div class="button-container" id="options"></div>
       </div>
       
       <div id="result-section" class="hidden">
@@ -36,7 +31,7 @@
     </div>
     
     <div class="footer">
-      <p>Built as Reddit's Cybersecurity Awareness Game</p>
+      <p>Built as Reddit's Animal Trivia Game</p>
     </div>
     
     <script type="application/javascript" src="script.js"></script>

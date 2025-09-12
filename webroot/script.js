@@ -1,7 +1,7 @@
 /** @typedef {import('./message.js').DevvitSystemMessage} DevvitSystemMessage */
 /** @typedef {import('./message.js').WebViewMessage} WebViewMessage */
 
-class CyberQuestApp {
+class AnimalQuestApp {
   constructor() {
     // Get references to HTML elements
     this.usernameLabel = /** @type {HTMLSpanElement} */ (document.querySelector('#username'));
@@ -14,10 +14,7 @@ class CyberQuestApp {
     this.resultMessage = /** @type {HTMLDivElement} */ (document.querySelector('#result-message'));
     this.explanation = /** @type {HTMLParagraphElement} */ (document.querySelector('#explanation'));
     
-    this.reportButton = /** @type {HTMLButtonElement} */ (document.querySelector('#btn-report'));
-    this.blockButton = /** @type {HTMLButtonElement} */ (document.querySelector('#btn-block'));
-    this.deleteButton = /** @type {HTMLButtonElement} */ (document.querySelector('#btn-delete'));
-    this.ignoreButton = /** @type {HTMLButtonElement} */ (document.querySelector('#btn-ignore'));
+    this.optionsContainer = /** @type {HTMLDivElement} */ (document.querySelector('#options'));
     this.nextButton = /** @type {HTMLButtonElement} */ (document.querySelector('#btn-next'));
     
     // Initialize data
@@ -31,11 +28,7 @@ class CyberQuestApp {
     window.addEventListener('load', () => {
       postWebViewMessage({ type: 'webViewReady' });
     });
-    
-    this.reportButton.addEventListener('click', () => this.#handleAnswer('report'));
-    this.blockButton.addEventListener('click', () => this.#handleAnswer('block'));
-    this.deleteButton.addEventListener('click', () => this.#handleAnswer('delete'));
-    this.ignoreButton.addEventListener('click', () => this.#handleAnswer('ignore'));
+
     // Fix the "Next Challenge" / "Back to Reddit" button
     this.nextButton.addEventListener('click', () => {
       try {
@@ -62,12 +55,12 @@ class CyberQuestApp {
    * Handle answer selection
    * @param {string} answer
    */
-  #handleAnswer(answer) {
-    console.log('Submitting answer:', answer);
+  #handleAnswer(selectedIndex) {
+    console.log('Submitting answer index:', selectedIndex);
     // Send answer to Devvit
     postWebViewMessage({ 
       type: 'submitAnswer', 
-      data: { answer } 
+      data: { selectedIndex } 
     });
     
     // Update button text based on this being the first answer
@@ -100,7 +93,8 @@ class CyberQuestApp {
           this.usernameLabel.innerText = username;
           this.userScoreLabel.innerText = userScore.toString();
           this.challengeTitle.innerText = challenge.title;
-          this.challengeScenario.innerText = challenge.scenario;
+          this.challengeScenario.innerText = challenge.question;
+          this.#renderOptions(challenge.options);
           break;
         }
         case 'updateScore': {
@@ -110,7 +104,7 @@ class CyberQuestApp {
           break;
         }
         case 'answerResult': {
-          const { isCorrect, explanation, correctAnswer } = message.data;
+          const { isCorrect, explanation, correctIndex } = message.data;
           
           // Show result section and hide answer section
           this.answerSection.classList.add('hidden');
@@ -123,8 +117,10 @@ class CyberQuestApp {
             this.resultMessage.innerHTML = '✅ <span class="correct">Correct!</span>';
             // Change the button text for next challenge option
             this.nextButton.innerText = "Next Challenge";
+            this.#confetti();
           } else {
-            this.resultMessage.innerHTML = `❌ <span class="incorrect">Not quite.</span> The correct answer was "${this.#getActionDisplay(correctAnswer)}".`;
+            const letters = ['A', 'B', 'C', 'D'];
+            this.resultMessage.innerHTML = `❌ <span class="incorrect">Not quite.</span> The correct answer was "${letters[correctIndex]}".`;
           }
           
           this.explanation.innerText = explanation;
@@ -137,7 +133,8 @@ class CyberQuestApp {
           
           // Update UI with new challenge
           this.challengeTitle.innerText = challenge.title;
-          this.challengeScenario.innerText = challenge.scenario;
+          this.challengeScenario.innerText = challenge.question;
+          this.#renderOptions(challenge.options);
           
           // Reset this flag for the new challenge
           this.lastAnswerCorrect = false;
@@ -155,17 +152,33 @@ class CyberQuestApp {
   };
   
   /**
-   * Get display name for action
-   * @param {string} action
-   * @returns {string}
+   * Render multiple choice options A-D
+   * @param {string[]} options
    */
-  #getActionDisplay(action) {
-    switch (action) {
-      case 'report': return 'Report';
-      case 'block': return 'Block';
-      case 'delete': return 'Delete';
-      case 'ignore': return 'Ignore';
-      default: return action;
+  #renderOptions(options) {
+    this.optionsContainer.innerHTML = '';
+    const letters = ['A', 'B', 'C', 'D'];
+    options.forEach((opt, idx) => {
+      const btn = document.createElement('button');
+      btn.textContent = `${letters[idx]}. ${opt}`;
+      btn.addEventListener('click', () => this.#handleAnswer(idx));
+      this.optionsContainer.appendChild(btn);
+    });
+  }
+
+  /**
+   * Simple confetti effect
+   */
+  #confetti() {
+    const count = 24;
+    for (let i = 0; i < count; i++) {
+      const piece = document.createElement('div');
+      piece.className = 'confetti';
+      piece.style.left = Math.random() * 100 + 'vw';
+      piece.style.background = ['#ff4500', '#46a758', '#0079d3', '#e54d2e'][i % 4];
+      piece.style.animationDelay = (Math.random() * 0.5) + 's';
+      document.body.appendChild(piece);
+      setTimeout(() => piece.remove(), 2200);
     }
   }
 }
@@ -190,4 +203,4 @@ function postWebViewMessage(msg) {
 }
 
 // Initialize the app
-new CyberQuestApp();
+new AnimalQuestApp();

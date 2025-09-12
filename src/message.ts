@@ -1,36 +1,41 @@
 /** Message from Devvit to the web view. */
 export type DevvitMessage =
-  | { 
-      type: 'initialData'; 
-      data: { 
-        username: string; 
-        challenge: { 
+  | {
+      type: 'initialData';
+      data: {
+        username: string;
+        challenge: {
           title: string;
-          scenario: string;
-          correctAnswer: string;
+          question: string;
+          options: string[];
+          correctIndex: number;
           explanation: string;
         };
         userScore: number;
-      } 
+      };
     }
   | { type: 'updateScore'; data: { newScore: number } }
-  | { type: 'answerResult'; data: { isCorrect: boolean; explanation: string; correctAnswer: string } }
-  | { 
-      type: 'nextChallenge'; 
-      data: { 
+  | {
+      type: 'answerResult';
+      data: { isCorrect: boolean; explanation: string; correctIndex: number };
+    }
+  | {
+      type: 'nextChallenge';
+      data: {
         challenge: {
           title: string;
-          scenario: string;
-          correctAnswer: string;
+          question: string;
+          options: string[];
+          correctIndex: number;
           explanation: string;
-        }
-      } 
+        };
+      };
     };
 
 /** Message from the web view to Devvit. */
 export type WebViewMessage =
   | { type: 'webViewReady' }
-  | { type: 'submitAnswer'; data: { answer: string } }
+  | { type: 'submitAnswer'; data: { selectedIndex: number } }
   | { type: 'getNextChallenge' }
   | { type: 'close' };
 
