@@ -209,7 +209,8 @@ class AnimalQuestApp {
     const letters = ['A', 'B', 'C', 'D'];
     options.forEach((opt, idx) => {
       const btn = document.createElement('button');
-      btn.textContent = `${letters[idx]}. ${opt}`;
+      const animals = ['🦁','🐼','🦊','🦒'];
+      btn.textContent = `${animals[idx]}  ${letters[idx]}. ${opt}`;
       btn.addEventListener('click', () => this.#handleAnswer(idx));
       this.optionsContainer.appendChild(btn);
     });

@@ -8,6 +8,9 @@
   --incorrect-color: #e54d2e;
   --border-radius: 8px;
   --shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  --jungle-1: #e6f7f2;
+  --jungle-2: #d7f2ea;
+  --jungle-3: #c7ecdf;
 }
 
 body {
@@ -18,7 +21,7 @@ body {
   max-width: 650px;
   margin: 0 auto;
   min-height: 100vh;
-  background-color: var(--background-color);
+  background: linear-gradient(180deg, var(--jungle-1), var(--jungle-2), var(--jungle-3));
   color: var(--text-color);
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   line-height: 1.5;
@@ -35,7 +38,7 @@ h1, h2, h3 {
 h1 {
   font-size: 1.8rem;
   text-align: center;
-  margin-bottom: 1rem;
+  margin-bottom: 0.25rem;
 }
 
 h2 {
@@ -64,6 +67,15 @@ h3 {
   box-shadow: var(--shadow);
   margin-bottom: 1rem;
   flex: 1;
+}
+
+.hero {
+  text-align: center;
+  font-size: 1.4rem;
+  padding: 0.5rem 0.75rem;
+  background: rgba(255, 255, 255, 0.6);
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow);
 }
 
 .button-container {
@@ -170,6 +182,29 @@ button:disabled {
     transform: translateY(110vh) rotate(720deg);
     opacity: 1;
   }
+}
+
+/* Animated paw prints in the background */
+#ornaments::before, #ornaments::after {
+  content: '🐾';
+  position: fixed;
+  font-size: 28px;
+  opacity: 0.15;
+  animation: paws 6s linear infinite;
+}
+#ornaments::after {
+  content: '🐾🐾';
+  left: 10%;
+  top: 20%;
+}
+#ornaments::before {
+  right: 12%;
+  bottom: 18%;
+}
+@keyframes paws {
+  0% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-6px) rotate(10deg); }
+  100% { transform: translateY(0) rotate(0deg); }
 }
 
 .loading {
