@@ -46,12 +46,6 @@ UpPaws presents animal trivia questions with four options (A–D). Pick the corr
    git clone https://github.com/ayish1998/redditquest-app-game
    cd redditquest-app-game
 
-### Game Interface Screenshots
-  <img src="./Screenshots/Home.png" alt="UpPaws Screenshot" width="600" />
-   <img src="./Screenshots/Game.png" alt="UpPaws Screenshot" width="600" />
-    <img src="./Screenshots/Correct.png" alt="UpPaws Screenshot" width="600" />
-     <img src="./Screenshots/Wrong.png" alt="UpPaws Screenshot" width="600" />
-
 
 ### License
     MIT
