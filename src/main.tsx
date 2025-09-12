@@ -273,31 +273,31 @@ Devvit.addCustomPostType({
       <vstack grow padding="large">
         <vstack grow gap="large">
           <vstack alignment="middle center" gap="small">
-            <text size="xlarge" weight="bold" color="brand">
+            <text size="xlarge" weight="bold">
               AnimalQuest Trivia
             </text>
             <text size="medium">Test your animal knowledge</text>
           </vstack>
           
-          <vstack backgroundColor="error" borderRadius="medium" padding="medium">
+          <vstack borderRadius="medium" padding="medium">
             <hstack gap="medium" alignment="center middle" padding="small">
               <image url="https://www.redditstatic.com/avatars/defaults/v2/avatar_default_1.png" size="small" />
               <vstack gap="medium">
                 <hstack gap="medium" alignment="center">
                   <text size="medium" weight="bold">Username:</text>
-                  <text size="medium" weight="bold" color="white">
+                  <text size="medium" weight="bold">
                     {username ?? 'anonymous'}
                   </text>
                 </hstack>
                 <hstack gap="medium" alignment="center">
                   <text size="medium" weight="bold">Current score:</text>
-                  <text size="medium" weight="bold" color="white">
+                  <text size="medium" weight="bold">
                     {score ?? '0'} points
                   </text>
                 </hstack>
                 <hstack gap="medium" alignment="center">
                   <text size="medium" weight="bold">Daily streak:</text>
-                  <text size="medium" weight="bold" color="white">
+                  <text size="medium" weight="bold">
                     {streak ?? '0'} 🔥
                   </text>
                 </hstack>
@@ -305,9 +305,9 @@ Devvit.addCustomPostType({
             </hstack>
           </vstack>
           
-          <vstack backgroundColor="error" borderRadius="medium" padding="large" gap="large">
-            <text weight="bold" size="xlarge" color="white">{challenge?.title || 'Loading Challenge...'}</text>
-            <text size="medium" color="white">{challenge?.question || 'Please wait while we load your animal trivia question.'}</text>
+          <vstack borderRadius="medium" padding="large" gap="large">
+            <text weight="bold" size="xlarge">{challenge?.title || 'Loading Challenge...'}</text>
+            <text size="medium">{challenge?.question || 'Please wait while we load your animal trivia question.'}</text>
           </vstack>
           
           <vstack alignment="middle center" padding="medium">
@@ -317,7 +317,7 @@ Devvit.addCustomPostType({
           </vstack>
           
           <vstack alignment="middle center" padding="small">
-            <text size="small" color="textSecondary" alignment="center">
+            <text size="small" alignment="center">
               Built as Reddit's Animal Trivia Game
             </text>
           </vstack>
