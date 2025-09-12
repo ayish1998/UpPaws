@@ -53,10 +53,22 @@ const challenges = [
   }
 ];
 
-// Get a random challenge
-function getRandomChallenge() {
-  const randomIndex = Math.floor(Math.random() * challenges.length);
-  return challenges[randomIndex];
+// Daily challenge helpers
+function getDateKey(): string {
+  const now = new Date();
+  const yyyy = now.getUTCFullYear();
+  const mm = String(now.getUTCMonth() + 1).padStart(2, '0');
+  const dd = String(now.getUTCDate()).padStart(2, '0');
+  return `${yyyy}-${mm}-${dd}`;
+}
+
+function getDailyChallenge() {
+  // Use the date key as a simple deterministic seed to pick an index
+  const key = getDateKey();
+  let hash = 0;
+  for (let i = 0; i < key.length; i++) hash = (hash * 31 + key.charCodeAt(i)) >>> 0;
+  const index = hash % challenges.length;
+  return challenges[index];
 }
 
 // Add a custom post type to Devvit
@@ -76,6 +88,13 @@ Devvit.addCustomPostType({
       return Number(userScore ?? 0);
     });
 
+    // Load user streak from redis
+    const [streak] = useState(async () => {
+      if (!username) return 0;
+      const s = await context.redis.get(`user_streak_${username}`);
+      return Number(s ?? 0);
+    });
+
     // Get current challenge for this post
     const [challenge] = useState(async () => {
       // Try to get existing challenge for this post
@@ -84,8 +103,8 @@ Devvit.addCustomPostType({
         return JSON.parse(existingChallenge);
       }
       
-      // Create a new challenge for this post
-      const newChallenge = getRandomChallenge();
+      // Create today's challenge for this post (same for everyone today)
+      const newChallenge = getDailyChallenge();
       await context.redis.set(`challenge_${context.postId}`, JSON.stringify(newChallenge));
       return newChallenge;
     });
@@ -117,6 +136,27 @@ Devvit.addCustomPostType({
       }
     }
 
+    async function updateStreakOnFirstDailyCorrect(): Promise<number | null> {
+      if (!username) return null;
+      const dateKey = getDateKey();
+      const awardedKey = `user_scored_${username}_${dateKey}`;
+      const alreadyAwarded = await context.redis.get(awardedKey);
+      if (alreadyAwarded) return null;
+
+      const lastPlayed = (await context.redis.get(`user_last_play_${username}`)) ?? '';
+      const currentStreakRaw = await context.redis.get(`user_streak_${username}`);
+      let currentStreak = Number(currentStreakRaw ?? 0);
+      const today = getDateKey();
+      const y = new Date();
+      y.setUTCDate(y.getUTCDate() - 1);
+      const yKey = `${y.getUTCFullYear()}-${String(y.getUTCMonth() + 1).padStart(2, '0')}-${String(y.getUTCDate()).padStart(2, '0')}`;
+      if (lastPlayed === yKey) currentStreak += 1;
+      else if (lastPlayed !== today) currentStreak = 1;
+      await context.redis.set(`user_streak_${username}`, String(currentStreak));
+      await context.redis.set(`user_last_play_${username}`, today);
+      return currentStreak;
+    }
+
     const webView = useWebView<WebViewMessage, DevvitMessage>({
       // URL of your web view content
       url: 'page.html',
@@ -140,12 +180,17 @@ Devvit.addCustomPostType({
           switch (messageType) {
             case 'webViewReady':
               // Send initial data to the web view
+              // Load leaderboard for initial payload
+              const leaderboardData = await context.redis.get('leaderboard');
+              const leaderboard = leaderboardData ? JSON.parse(leaderboardData) : [];
               webView.postMessage({
                 type: 'initialData',
                 data: {
                   username: username,
                   challenge: challenge,
-                  userScore: score
+                  userScore: score,
+                  userStreak: streak,
+                  leaderboard
                 },
               });
               break;
@@ -158,16 +203,28 @@ Devvit.addCustomPostType({
               // Check if the answer is correct
               const isCorrect = message.data.selectedIndex === challenge.correctIndex;
               
-              // Update user score if correct
+              // Update user score if correct and not already awarded today
+              let explanationText = challenge.explanation;
               if (isCorrect && username) {
-                const newScore = score + 5;
-                await updateScore(newScore);
-                
-                // Send score update
-                webView.postMessage({
-                  type: 'updateScore',
-                  data: { newScore }
-                });
+                const dateKey = getDateKey();
+                const awardedKey = `user_scored_${username}_${dateKey}`;
+                const alreadyAwarded = await context.redis.get(awardedKey);
+                if (!alreadyAwarded) {
+                  const newScore = score + 5;
+                  await updateScore(newScore);
+                  await context.redis.set(awardedKey, '1');
+                  const newStreak = await updateStreakOnFirstDailyCorrect();
+                  // Send score update
+                  webView.postMessage({
+                    type: 'updateScore',
+                    data: { newScore }
+                  });
+                  if (newStreak !== null) {
+                    webView.postMessage({ type: 'updateStreak', data: { newStreak } });
+                  }
+                } else {
+                  explanationText = `${explanationText} You've already earned today's points. Come back tomorrow!`;
+                }
               }
               
               // Send answer result to the web view
@@ -175,14 +232,14 @@ Devvit.addCustomPostType({
                 type: 'answerResult',
                 data: {
                   isCorrect,
-                  explanation: challenge.explanation,
+                  explanation: explanationText,
                   correctIndex: challenge.correctIndex
                 }
               });
               break;
             case 'getNextChallenge':
-              // Generate a new challenge and send it to the web view
-              const newChallenge = getRandomChallenge();
+              // Always send today's challenge (daily mode)
+              const newChallenge = getDailyChallenge();
               
               // Update the challenge in Redis for this post
               await context.redis.set(`challenge_${context.postId}`, JSON.stringify(newChallenge));
@@ -236,6 +293,12 @@ Devvit.addCustomPostType({
                   <text size="medium" weight="bold">Current score:</text>
                   <text size="medium" weight="bold" color="white">
                     {score ?? '0'} points
+                  </text>
+                </hstack>
+                <hstack gap="medium" alignment="center">
+                  <text size="medium" weight="bold">Daily streak:</text>
+                  <text size="medium" weight="bold" color="white">
+                    {streak ?? '0'} 🔥
                   </text>
                 </hstack>
               </vstack>
@@ -295,20 +358,34 @@ Devvit.addTrigger({
     // Update user score if we have a user
     const username = comment.author;
     if (username && isCorrect) {
-      // Get current score
-      const currentScoreData = await context.redis.get(`user_score_${username}`);
-      const currentScore = Number(currentScoreData ?? 0);
-      
-      // Add points
-      const newScore = currentScore + 5;
-      await context.redis.set(`user_score_${username}`, newScore.toString());
+      const dateKey = getDateKey();
+      const awardedKey = `user_scored_${username}_${dateKey}`;
+      const alreadyAwarded = await context.redis.get(awardedKey);
+      if (!alreadyAwarded) {
+        // Get current score
+        const currentScoreData = await context.redis.get(`user_score_${username}`);
+        const currentScore = Number(currentScoreData ?? 0);
+        const newScore = currentScore + 5;
+        await context.redis.set(`user_score_${username}`, newScore.toString());
+        await context.redis.set(awardedKey, '1');
+      }
     }
     
     // Reply with feedback
     const letters = ['A', 'B', 'C', 'D'];
-    const replyText = isCorrect 
-      ? `✅ Correct! ${challenge.explanation} You've earned 5 points.`
-      : `❌ Not quite. The correct answer was "${letters[challenge.correctIndex]}". ${challenge.explanation}`;
+    let replyText = '';
+    if (isCorrect) {
+      const dateKey = getDateKey();
+      const awardedKey = `user_scored_${comment.author}_${dateKey}`;
+      const alreadyAwarded = await context.redis.get(awardedKey);
+      if (alreadyAwarded) {
+        replyText = `✅ Correct! ${challenge.explanation} You've already earned today's points. Come back tomorrow!`;
+      } else {
+        replyText = `✅ Correct! ${challenge.explanation} You've earned 5 points.`;
+      }
+    } else {
+      replyText = `❌ Not quite. The correct answer was "${letters[challenge.correctIndex]}". ${challenge.explanation}`;
+    }
     
     await context.reddit.submitComment({
       parentId: comment.id,

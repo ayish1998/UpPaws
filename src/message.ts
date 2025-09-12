@@ -12,9 +12,12 @@ export type DevvitMessage =
           explanation: string;
         };
         userScore: number;
+        userStreak?: number;
+        leaderboard?: Array<{ username: string; score: number }>;
       };
     }
   | { type: 'updateScore'; data: { newScore: number } }
+  | { type: 'updateStreak'; data: { newStreak: number } }
   | {
       type: 'answerResult';
       data: { isCorrect: boolean; explanation: string; correctIndex: number };

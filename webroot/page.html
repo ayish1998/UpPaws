@@ -13,10 +13,13 @@
     <h1>Animal Trivia</h1>
     <h3>Welcome, <span id="username">User</span>!</h3>
     <h3>Your score: <span id="userScore">0</span> points</h3>
+    <h4 id="userStreak" class="subtitle hidden">Streak: <span id="streakVal">0</span> 🔥</h4>
+    <div id="leaderboard" class="leaderboard hidden"></div>
     
     <div class="challenge-card">
       <h2 id="challengeTitle">Loading question...</h2>
       <p id="challengeScenario">Please wait while we load your animal trivia question.</p>
+      <div class="progress" id="progress"><div class="bar" id="progressBar"></div></div>
       
       <div id="answer-section">
         <h3>Choose the correct answer:</h3>
@@ -26,12 +29,16 @@
       <div id="result-section" class="hidden">
         <div id="result-message"></div>
         <p id="explanation"></p>
+        <div id="shareRow" class="hidden">
+          <button id="btn-share">Share your win</button>
+        </div>
         <button id="btn-next">Back to Reddit</button>
       </div>
     </div>
     
     <div class="footer">
       <p>Built as Reddit's Animal Trivia Game</p>
+      <button id="muteToggle" class="muter">🔊 Sound</button>
     </div>
     
     <script type="application/javascript" src="script.js"></script>

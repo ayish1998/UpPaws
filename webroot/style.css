@@ -47,6 +47,11 @@ h3 {
   font-weight: 500;
 }
 
+.subtitle {
+  margin-top: -0.5rem;
+  color: #6c7a89;
+}
+
 #username, #userScore {
   color: var(--accent-color);
   font-weight: 600;
@@ -78,7 +83,7 @@ button {
   font-size: 1rem;
   font-weight: 500;
   cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.2s, opacity 0.2s;
+  transition: transform 0.2s, box-shadow 0.2s, opacity 0.2s, background 0.2s;
   min-width: 120px;
 }
 
@@ -106,11 +111,31 @@ button:disabled {
   display: none;
 }
 
+/* Progress bar */
+.progress {
+  height: 8px;
+  background: #e5e5e5;
+  border-radius: 999px;
+  overflow: hidden;
+}
+.progress > .bar {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, #46a758, #ffb703);
+  transition: width 0.2s linear;
+}
+
 #result-section {
   background-color: #f2f2f2;
   padding: 1rem;
   border-radius: var(--border-radius);
   margin-top: 1rem;
+}
+
+#shareRow {
+  display: flex;
+  justify-content: center;
+  margin-top: 0.5rem;
 }
 
 .correct {
@@ -170,6 +195,26 @@ button:disabled {
   font-size: 0.9rem;
   margin-top: auto;
   padding: 1rem 0;
+}
+
+.leaderboard {
+  background: var(--card-bg);
+  border-radius: var(--border-radius);
+  padding: 0.75rem 1rem;
+  box-shadow: var(--shadow);
+  margin-bottom: 0.5rem;
+  font-size: 0.95rem;
+}
+.leaderboard .entry {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.25rem 0;
+}
+
+.muter {
+  margin-top: 0.5rem;
+  background: #444;
+  color: #fff;
 }
 
 @media (max-width: 500px) {
