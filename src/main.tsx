@@ -2213,7 +2213,7 @@ Devvit.addCustomPostType({
       },
     });
 
-    // Render the custom post type with immediate game interface
+    // Render the custom post type with game interface
     return (
       <vstack grow padding="none">
         <vstack grow padding="large" gap="large" alignment="top center">
@@ -2237,29 +2237,19 @@ Devvit.addCustomPostType({
             </hstack>
           </hstack>
           
-          {/* Main Game Interface */}
+          {/* Game Interface */}
           <vstack borderRadius="large" padding="large" gap="large" backgroundColor="rgba(255,255,255,0.95)" width="full" alignment="middle center">
             <vstack alignment="middle center" gap="medium">
-              <text weight="bold" size="xlarge" color="#2D3748">🎮 Professional Game Interface</text>
-              <text size="medium" alignment="center" color="#4A5568">Experience console-quality gaming with stunning visuals, animations, and effects!</text>
+              <text weight="bold" size="xlarge" color="#2D3748">{puzzle ? `${puzzle.emoji} Daily Animal Challenge` : '🎮 Loading Game...'}</text>
+              <text size="medium" alignment="center" color="#4A5568">{puzzle ? 'Solve the puzzle to capture this amazing animal!' : 'Preparing your gaming experience...'}</text>
             </vstack>
             
-            {/* Game Features */}
-            <vstack gap="small" alignment="start stretch">
-              <text size="medium" color="#2D3748">✨ Stunning visual effects and animations</text>
-              <text size="medium" color="#2D3748">🎯 Interactive puzzle gameplay</text>
-              <text size="medium" color="#2D3748">⚔️ Battle system with wild animals</text>
-              <text size="medium" color="#2D3748">🏆 Leaderboards and achievements</text>
-              <text size="medium" color="#2D3748">🛒 In-game shop and economy</text>
-              <text size="medium" color="#2D3748">🗺️ World exploration system</text>
-            </vstack>
-            
-            {/* Launch Game Button */}
+            {/* Game Action */}
             <vstack alignment="middle center" gap="medium">
               <button appearance="primary" size="large" onPress={() => webView.mount()}>
-                🚀 Launch Game Interface
+                🎮 Play Now
               </button>
-              <text size="small" alignment="center" color="#718096">Click above to experience the full game interface</text>
+              <text size="small" alignment="center" color="#718096">Click to start the full game experience</text>
             </vstack>
           </vstack>
           

@@ -455,6 +455,21 @@
       <div id="toast" class="toast hidden"></div>
     </div>
 
+    <script type="application/javascript">
+      // Simple loading indicator
+      console.log('UpPaws game loading...');
+      
+      // Add loading message
+      document.addEventListener('DOMContentLoaded', function() {
+        console.log('DOM loaded, initializing game...');
+        const gameRoot = document.getElementById('gameRoot');
+        if (gameRoot) {
+          console.log('Game root found, loading script...');
+        } else {
+          console.error('Game root not found!');
+        }
+      });
+    </script>
     <script type="application/javascript" src="script.js"></script>
   </body>
 </html>

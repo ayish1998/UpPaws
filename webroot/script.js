@@ -289,9 +289,18 @@ class AnimalQuestApp {
           // Load cosmetic store
           postWebViewMessage({ type: 'getCosmeticStore' });
           
-          // Auto-start the game instead of showing start overlay
+          // Game is ready, auto-start immediately
+          console.log('Game initialized with puzzle:', this.puzzle);
+          
+          // Hide start overlay immediately
+          if (this.startOverlay) {
+            this.startOverlay.classList.remove('visible');
+            this.startOverlay.classList.add('hidden');
+          }
+          
+          // Auto-start the game
+          this.mode = 'daily';
           setTimeout(() => {
-            this.mode = 'daily';
             this.#begin();
           }, 500);
           break;
@@ -783,17 +792,20 @@ class AnimalQuestApp {
   }
 
   #begin() {
-    // Ensure puzzle is ready before starting
+    console.log('Begin called, puzzle:', this.
     if (!this.puzzle || !this.puzzle.letters) {
       this.#toast('Loading puzzle...');
       // try again shortly
       setTimeout(() => this.#begin(), 400);
       return;
     }
+    
+    // Hide start overlay
     if (this.startOverlay) {
       this.startOverlay.classList.remove('visible');
       this.startOverlay.classList.add('hidden');
     }
+    
     this.#countdown(() => {
       this.#toast('Go!');
       this.#startTimer();
