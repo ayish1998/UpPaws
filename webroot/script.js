@@ -288,6 +288,10 @@ class AnimalQuestApp {
           
           // Load cosmetic store
           postWebViewMessage({ type: 'getCosmeticStore' });
+          
+          // Auto-start the game instead of showing start overlay
+          this.mode = 'daily';
+          this.#begin();
           break;
         }
         case 'updateScore': {

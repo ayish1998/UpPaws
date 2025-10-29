@@ -2213,55 +2213,10 @@ Devvit.addCustomPostType({
       },
     });
 
-    // Render the custom post type
+    // Render the custom post type - Load game interface immediately
     return (
       <vstack grow padding="none">
-        <vstack grow padding="large" gap="large" alignment="top center">
-          {/* Hero Header */}
-          <vstack alignment="middle center" padding="medium" gap="small">
-            <text size="xlarge" weight="bold" color="#FF6B35">{puzzle ? `${puzzle.emoji} AnimalQuest` : 'AnimalQuest'}</text>
-            <text size="medium" color="#4A5568">Guess the animal from emoji + letters</text>
-          </vstack>
-          
-          {/* Stats Row */}
-          <hstack gap="small" alignment="center middle">
-            <hstack borderRadius="full" padding="small" backgroundColor="#FF6B35" gap="xsmall" alignment="center middle">
-              <image url="https://www.redditstatic.com/avatars/defaults/v2/avatar_default_1.png" size="xsmall" />
-              <text size="small" weight="bold" color="white">u/{username ?? 'anonymous'}</text>
-            </hstack>
-            <hstack borderRadius="full" padding="small" backgroundColor="#FFD700" gap="xsmall" alignment="center middle">
-              <text size="small" weight="bold" color="#1A202C">⭐ {score ?? '0'}</text>
-            </hstack>
-            <hstack borderRadius="full" padding="small" backgroundColor="#FF4444" gap="xsmall" alignment="center middle">
-              <text size="small" weight="bold" color="white">🔥 {streak ?? '0'}</text>
-            </hstack>
-          </hstack>
-          
-          {/* Game Card */}
-          <vstack borderRadius="large" padding="large" gap="large" backgroundColor="#F7FAFC" width="full">
-            <vstack alignment="middle center" gap="medium">
-              <text weight="bold" size="xlarge" color="#2D3748">{puzzle ? `${puzzle.emoji} Daily Animal` : 'Loading Puzzle...'}</text>
-              <text size="medium" alignment="center" color="#4A5568">{puzzle ? 'Tap Play to start the daily puzzle.' : 'Please wait while we load your animal puzzle.'}</text>
-            </vstack>
-            <vstack alignment="middle center" gap="medium">
-              <button appearance="primary" size="large" onPress={() => webView.mount()}>
-                🎮 Play Puzzle
-              </button>
-              <button appearance="secondary" size="medium" onPress={() => {
-                webView.mount();
-                // Send start battle message after a short delay
-                setTimeout(() => {
-                  webView.postMessage({ type: 'startBattle', data: {} });
-                }, 1000);
-              }}>
-                ⚔️ Battle Wild Animal
-              </button>
-            </vstack>
-          </vstack>
-          
-          {/* Footer */}
-          <text size="xsmall" alignment="center" color="#718096">Built for Reddit — UpPaws</text>
-        </vstack>
+        {webView}
       </vstack>
     );
   },
