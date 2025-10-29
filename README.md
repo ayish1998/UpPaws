@@ -52,19 +52,3 @@ UpPaws presents a daily emoji and a shuffled bank of letters. Drag/tap to fill t
     MIT
 
 ---
-
-## 🏆 Hackathon Submission Info
-
-- **Category**: Daily Games
-- **Platform**: Devvit Web (Interactive Posts + WebView)
-- **How to Test**:
-  - Login: `devvit login`
-  - Playtest: `devvit playtest --subreddit <your_test_subreddit>`
-  - Or upload/install: `devvit upload` then `devvit install --subreddit <your_test_subreddit> --app redditquest-app@latest`
-- **What to Submit**:
-  - App listing link (after `devvit upload`): `developers.reddit.com/apps/{app-name}`
-  - Demo Post: link to your public test subreddit with a live game post
-  - Developer Reddit username(s)
-  - Optional: 1-minute walkthrough video
-
-UpPaws is built for polish and Beta readiness with daily content, fair scoring, and Reddit-native engagement inside posts.

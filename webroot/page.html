@@ -19,10 +19,18 @@
         <div class="hud">
           <div class="badge">u/<span id="username">User</span></div>
           <div class="spacer"></div>
+          <button id="btn-shop" class="badge btn-shop">🛒</button>
+          <button id="btn-world-map" class="badge btn-world-map">🗺️</button>
+          <button id="btn-education" class="badge btn-education">🎓</button>
           <button id="btn-leaderboard" class="badge btn-leaderboard">🏆</button>
           <div class="badge">🔥 <span id="streakVal">0</span></div>
           <div class="badge">⏱ <span id="timerVal">15</span>s</div>
           <div class="badge">⭐ <span id="userScore">0</span></div>
+          <div class="currency-hud">
+            <div class="badge">🪙 <span id="pawCoins">0</span></div>
+            <div class="badge">🔬 <span id="researchPoints">0</span></div>
+            <div class="badge">⚔️ <span id="battleTokens">0</span></div>
+          </div>
           <button id="muteToggle" class="badge btn-muted">🔊</button>
         </div>
 
@@ -104,6 +112,342 @@
             <div id="leaderboard-streaks" class="leaderboard-tab">
               <div class="leaderboard-list" id="streaks-list"></div>
             </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Shop Overlay -->
+      <div id="shopOverlay" class="overlay hidden">
+        <div class="overlay-card shop-card">
+          <div class="shop-header">
+            <h2>🛒 Shop</h2>
+            <button id="btn-close-shop" class="btn-close">✕</button>
+          </div>
+          <div class="shop-tabs">
+            <button class="tab-btn active" data-tab="items">Items</button>
+            <button class="tab-btn" data-tab="premium">Premium</button>
+            <button class="tab-btn" data-tab="cosmetics">Cosmetics</button>
+          </div>
+          <div class="shop-content">
+            <div id="shop-items" class="shop-tab active">
+              <div class="shop-grid">
+                <div class="shop-item" data-item="puzzle_hint">
+                  <div class="item-icon">💡</div>
+                  <div class="item-name">Puzzle Hint</div>
+                  <div class="item-description">Reveals one letter</div>
+                  <div class="item-price">🪙 10</div>
+                  <button class="btn-buy">Buy</button>
+                </div>
+                <div class="shop-item" data-item="time_extension">
+                  <div class="item-icon">⏰</div>
+                  <div class="item-name">Time Extension</div>
+                  <div class="item-description">+30 seconds</div>
+                  <div class="item-price">🪙 15</div>
+                  <button class="btn-buy">Buy</button>
+                </div>
+                <div class="shop-item" data-item="capture_boost">
+                  <div class="item-icon">🎯</div>
+                  <div class="item-name">Capture Boost</div>
+                  <div class="item-description">+25% capture rate</div>
+                  <div class="item-price">🪙 25 🔬 5</div>
+                  <button class="btn-buy">Buy</button>
+                </div>
+              </div>
+            </div>
+            <div id="shop-premium" class="shop-tab">
+              <div class="premium-tiers">
+                <div class="premium-tier" data-tier="trainer">
+                  <div class="tier-name">Trainer License</div>
+                  <div class="tier-price">🪙 500</div>
+                  <div class="tier-benefits">
+                    <div>+50 collection slots</div>
+                    <div>+25% currency bonus</div>
+                    <div>2 exclusive habitats</div>
+                  </div>
+                  <button class="btn-buy-premium">Subscribe</button>
+                </div>
+                <div class="premium-tier" data-tier="elite">
+                  <div class="tier-name">Elite Trainer</div>
+                  <div class="tier-price">🪙 1000</div>
+                  <div class="tier-benefits">
+                    <div>+100 collection slots</div>
+                    <div>+50% currency bonus</div>
+                    <div>2x training speed</div>
+                    <div>Priority matchmaking</div>
+                  </div>
+                  <button class="btn-buy-premium">Subscribe</button>
+                </div>
+              </div>
+            </div>
+            <div id="shop-cosmetics" class="shop-tab">
+              <div id="cosmetics-grid" class="shop-grid">
+                <!-- Cosmetics will be loaded dynamically -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Daily Reward Overlay -->
+      <div id="dailyRewardOverlay" class="overlay hidden">
+        <div class="overlay-card reward-card">
+          <div class="reward-header">
+            <h2>🎁 Daily Reward</h2>
+          </div>
+          <div class="reward-content">
+            <div class="reward-day">Day <span id="rewardDay">1</span></div>
+            <div class="reward-items">
+              <div class="reward-currency">
+                <div>🪙 <span id="rewardPawCoins">0</span></div>
+                <div>🔬 <span id="rewardResearchPoints">0</span></div>
+                <div>⚔️ <span id="rewardBattleTokens">0</span></div>
+              </div>
+              <div id="rewardItemsList" class="reward-bonus-items"></div>
+            </div>
+            <button id="btn-claim-reward" class="btn-primary">Claim Reward</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- World Map Overlay -->
+      <div id="worldMapOverlay" class="overlay hidden">
+        <div class="overlay-card world-map-card">
+          <div class="world-map-header">
+            <h2>🗺️ World Map</h2>
+            <button id="btn-close-world-map" class="btn-close">✕</button>
+          </div>
+          <div id="world-map-container" class="world-map-container">
+            <div id="world-map" class="world-map">
+              <!-- Map regions will be populated here -->
+            </div>
+            <div id="map-legend" class="map-legend">
+              <div class="legend-item">
+                <span class="legend-color available"></span>
+                <span>Available</span>
+              </div>
+              <div class="legend-item">
+                <span class="legend-color locked"></span>
+                <span>Locked</span>
+              </div>
+              <div class="legend-item">
+                <span class="legend-color weather-active"></span>
+                <span>Weather Event</span>
+              </div>
+            </div>
+          </div>
+          <div id="region-info" class="region-info">
+            <h3 id="region-name">Select a region</h3>
+            <p id="region-description">Click on a region to see details</p>
+            <div id="region-weather" class="weather-info"></div>
+            <div id="region-actions" class="region-actions">
+              <button id="btn-explore-region" class="btn btn-primary" disabled>Explore</button>
+              <button id="btn-view-expeditions" class="btn btn-secondary" disabled>Daily Expeditions</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Habitat Exploration Overlay -->
+      <div id="habitatOverlay" class="overlay hidden">
+        <div class="overlay-card habitat-card">
+          <div class="habitat-header">
+            <h2 id="habitat-name">🌲 Habitat Explorer</h2>
+            <button id="btn-close-habitat" class="btn-close">✕</button>
+          </div>
+          <div class="habitat-content">
+            <div id="habitat-description" class="habitat-description"></div>
+            <div id="habitat-weather" class="weather-display">
+              <div class="weather-current">
+                <span id="weather-icon">☀️</span>
+                <span id="weather-name">Clear</span>
+                <span id="weather-intensity">100%</span>
+              </div>
+              <div class="weather-effects" id="weather-effects"></div>
+            </div>
+            <div class="exploration-options">
+              <div class="expedition-type">
+                <label>
+                  <input type="radio" name="expeditionType" value="normal" checked>
+                  <span>Normal Expedition</span>
+                  <small>Standard exploration with regular rewards</small>
+                </label>
+                <label>
+                  <input type="radio" name="expeditionType" value="extended">
+                  <span>Extended Expedition</span>
+                  <small>Longer exploration with better rewards (2x cost)</small>
+                </label>
+              </div>
+              <div class="exploration-cost">
+                <span>Cost: </span>
+                <span id="exploration-cost-amount">10</span>
+                <span> PawCoins</span>
+              </div>
+            </div>
+            <div class="exploration-actions">
+              <button id="btn-start-exploration" class="btn btn-primary">Start Exploration</button>
+              <button id="btn-view-weather-forecast" class="btn btn-secondary">Weather Forecast</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Exploration Results Overlay -->
+      <div id="explorationResultsOverlay" class="overlay hidden">
+        <div class="overlay-card results-card">
+          <div class="results-header">
+            <h2>🎯 Exploration Results</h2>
+          </div>
+          <div id="exploration-results" class="exploration-results">
+            <!-- Results will be populated here -->
+          </div>
+          <button id="btn-close-results" class="btn btn-primary">Continue</button>
+        </div>
+      </div>
+
+      <!-- Daily Expeditions Overlay -->
+      <div id="expeditionsOverlay" class="overlay hidden">
+        <div class="overlay-card expeditions-card">
+          <div class="expeditions-header">
+            <h2>📋 Daily Expeditions</h2>
+            <button id="btn-close-expeditions" class="btn-close">✕</button>
+          </div>
+          <div id="expeditions-list" class="expeditions-list">
+            <!-- Expeditions will be populated here -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Educational Partnership Overlay -->
+      <div id="educationOverlay" class="overlay hidden">
+        <div class="overlay-card education-card">
+          <div class="education-header">
+            <h2>🎓 Educational Partnerships</h2>
+            <button id="btn-close-education" class="btn-close">✕</button>
+          </div>
+          <div class="education-tabs">
+            <button class="tab-btn active" data-tab="partners">Partners</button>
+            <button class="tab-btn" data-tab="content">Content</button>
+            <button class="tab-btn" data-tab="impact">Impact</button>
+            <button class="tab-btn" data-tab="amas">Expert AMAs</button>
+            <button class="tab-btn" data-tab="science">Citizen Science</button>
+          </div>
+          <div class="education-content">
+            <div id="education-partners" class="education-tab active">
+              <div class="partners-grid" id="partners-grid">
+                <!-- Wildlife organizations will be loaded here -->
+              </div>
+            </div>
+            <div id="education-content" class="education-tab">
+              <div class="content-list" id="sponsored-content-list">
+                <!-- Sponsored content will be loaded here -->
+              </div>
+            </div>
+            <div id="education-impact" class="education-tab">
+              <div class="impact-summary">
+                <h3>Your Conservation Impact</h3>
+                <div id="personal-impact" class="impact-stats">
+                  <!-- Personal impact stats will be loaded here -->
+                </div>
+                <h3>Global Community Impact</h3>
+                <div id="global-impact" class="impact-stats">
+                  <!-- Global impact stats will be loaded here -->
+                </div>
+              </div>
+            </div>
+            <div id="education-amas" class="education-tab">
+              <div class="amas-list" id="amas-list">
+                <!-- Expert AMAs will be loaded here -->
+              </div>
+            </div>
+            <div id="education-science" class="education-tab">
+              <div class="science-projects">
+                <div class="projects-list" id="citizen-science-projects">
+                  <!-- Citizen science projects will be loaded here -->
+                </div>
+                <div class="contributions-section">
+                  <h3>Your Contributions</h3>
+                  <div id="trainer-contributions" class="contributions-list">
+                    <!-- Trainer contributions will be loaded here -->
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Content Detail Overlay -->
+      <div id="contentDetailOverlay" class="overlay hidden">
+        <div class="overlay-card content-detail-card">
+          <div class="content-detail-header">
+            <h2 id="content-detail-title">Content Details</h2>
+            <button id="btn-close-content-detail" class="btn-close">✕</button>
+          </div>
+          <div id="content-detail-body" class="content-detail-body">
+            <!-- Content details will be loaded here -->
+          </div>
+          <div class="content-detail-actions">
+            <button id="btn-start-content" class="btn btn-primary">Start Activity</button>
+            <button id="btn-complete-content" class="btn btn-success hidden">Complete Activity</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- AMA Question Overlay -->
+      <div id="amaQuestionOverlay" class="overlay hidden">
+        <div class="overlay-card ama-question-card">
+          <div class="ama-question-header">
+            <h2>Ask a Question</h2>
+            <button id="btn-close-ama-question" class="btn-close">✕</button>
+          </div>
+          <div class="ama-question-body">
+            <textarea id="ama-question-text" placeholder="Enter your question for the expert..." rows="4"></textarea>
+            <div class="question-guidelines">
+              <h4>Guidelines:</h4>
+              <ul>
+                <li>Keep questions focused on the expert's area of expertise</li>
+                <li>Be respectful and constructive</li>
+                <li>Avoid duplicate questions</li>
+              </ul>
+            </div>
+          </div>
+          <div class="ama-question-actions">
+            <button id="btn-submit-question" class="btn btn-primary">Submit Question</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Data Contribution Overlay -->
+      <div id="dataContributionOverlay" class="overlay hidden">
+        <div class="overlay-card data-contribution-card">
+          <div class="data-contribution-header">
+            <h2>Contribute Data</h2>
+            <button id="btn-close-data-contribution" class="btn-close">✕</button>
+          </div>
+          <div class="data-contribution-body">
+            <div class="contribution-form">
+              <div class="form-group">
+                <label for="data-type">Data Type:</label>
+                <select id="data-type">
+                  <option value="animal_sighting">Animal Sighting</option>
+                  <option value="habitat_condition">Habitat Condition</option>
+                  <option value="behavior_observation">Behavior Observation</option>
+                  <option value="population_count">Population Count</option>
+                  <option value="environmental_data">Environmental Data</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="data-location">Location (optional):</label>
+                <input type="text" id="data-location" placeholder="e.g., Central Park, New York">
+              </div>
+              <div class="form-group">
+                <label for="data-details">Details:</label>
+                <textarea id="data-details" placeholder="Provide detailed information about your observation..." rows="4"></textarea>
+              </div>
+            </div>
+          </div>
+          <div class="data-contribution-actions">
+            <button id="btn-submit-data" class="btn btn-primary">Submit Data</button>
           </div>
         </div>
       </div>

@@ -47,6 +47,16 @@ class AnimalQuestApp {
     this.leaderboardOverlay = /** @type {HTMLDivElement} */ (document.querySelector('#leaderboardOverlay'));
     this.closeLeaderboardBtn = /** @type {HTMLButtonElement} */ (document.querySelector('#btn-close-leaderboard'));
     
+    // Economy UI elements
+    this.pawCoinsLabel = /** @type {HTMLSpanElement} */ (document.querySelector('#pawCoins'));
+    this.researchPointsLabel = /** @type {HTMLSpanElement} */ (document.querySelector('#researchPoints'));
+    this.battleTokensLabel = /** @type {HTMLSpanElement} */ (document.querySelector('#battleTokens'));
+    this.shopBtn = /** @type {HTMLButtonElement} */ (document.querySelector('#btn-shop'));
+    this.shopOverlay = /** @type {HTMLDivElement} */ (document.querySelector('#shopOverlay'));
+    this.closeShopBtn = /** @type {HTMLButtonElement} */ (document.querySelector('#btn-close-shop'));
+    this.dailyRewardOverlay = /** @type {HTMLDivElement} */ (document.querySelector('#dailyRewardOverlay'));
+    this.claimRewardBtn = /** @type {HTMLButtonElement} */ (document.querySelector('#btn-claim-reward'));
+    
     // Initialize data
     this.username = 'User';
     this.userScore = 0;
@@ -63,6 +73,11 @@ class AnimalQuestApp {
     this.lives = 3;
     this.combo = 1;
     this.freezeMs = 0;
+    
+    // Economy data
+    this.trainerProfile = null;
+    this.sessionId = null;
+    this.cosmeticStore = [];
     
     // Add event listeners
     window.addEventListener('message', this.#onMessage);
@@ -89,6 +104,37 @@ class AnimalQuestApp {
         this.muteToggle.textContent = this.muted ? '🔇' : '🔊';
       });
     }
+
+    // Economy event listeners
+    if (this.shopBtn) {
+      this.shopBtn.addEventListener('click', () => {
+        this.#showShop();
+        this.#playUi('click');
+      });
+    }
+    
+    if (this.closeShopBtn) {
+      this.closeShopBtn.addEventListener('click', () => {
+        this.#hideShop();
+        this.#playUi('click');
+      });
+    }
+    
+    if (this.claimRewardBtn) {
+      this.claimRewardBtn.addEventListener('click', () => {
+        this.#claimDailyReward();
+        this.#playUi('click');
+      });
+    }
+    
+    // Shop tab switching
+    document.querySelectorAll('.shop-tabs .tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        this.#switchShopTab(btn.dataset.tab);
+        this.#playUi('click');
+      });
+    });
+    }
     if (this.startButton) this.startButton.addEventListener('click', () => { this.mode = 'daily'; this.#begin(); });
     if (this.arcadeButton) this.arcadeButton.addEventListener('click', () => { this.mode = 'arcade'; this.#begin(); });
 
@@ -106,6 +152,72 @@ class AnimalQuestApp {
       if (e.target.classList.contains('tab-btn')) {
         this.#switchLeaderboardTab(e.target.dataset.tab);
       }
+    });
+
+    // Educational Partnership event listeners
+    this.educationBtn = document.querySelector('#btn-education');
+    this.educationOverlay = document.querySelector('#educationOverlay');
+    this.closeEducationBtn = document.querySelector('#btn-close-education');
+    this.contentDetailOverlay = document.querySelector('#contentDetailOverlay');
+    this.closeContentDetailBtn = document.querySelector('#btn-close-content-detail');
+    this.amaQuestionOverlay = document.querySelector('#amaQuestionOverlay');
+    this.closeAmaQuestionBtn = document.querySelector('#btn-close-ama-question');
+    this.dataContributionOverlay = document.querySelector('#dataContributionOverlay');
+    this.closeDataContributionBtn = document.querySelector('#btn-close-data-contribution');
+
+    if (this.educationBtn) {
+      this.educationBtn.addEventListener('click', () => {
+        this.#showEducationOverlay();
+        this.#playUi('click');
+      });
+    }
+
+    if (this.closeEducationBtn) {
+      this.closeEducationBtn.addEventListener('click', () => {
+        this.#hideEducationOverlay();
+        this.#playUi('click');
+      });
+    }
+
+    if (this.closeContentDetailBtn) {
+      this.closeContentDetailBtn.addEventListener('click', () => {
+        this.#hideContentDetailOverlay();
+        this.#playUi('click');
+      });
+    }
+
+    if (this.closeAmaQuestionBtn) {
+      this.closeAmaQuestionBtn.addEventListener('click', () => {
+        this.#hideAmaQuestionOverlay();
+        this.#playUi('click');
+      });
+    }
+
+    if (this.closeDataContributionBtn) {
+      this.closeDataContributionBtn.addEventListener('click', () => {
+        this.#hideDataContributionOverlay();
+        this.#playUi('click');
+      });
+    }
+
+    // Education tab switching
+    document.querySelectorAll('.education-tabs .tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        this.#switchEducationTab(btn.dataset.tab);
+        this.#playUi('click');
+      });
+    });
+
+    // Submit AMA question
+    document.querySelector('#btn-submit-question')?.addEventListener('click', () => {
+      this.#submitAmaQuestion();
+      this.#playUi('click');
+    });
+
+    // Submit data contribution
+    document.querySelector('#btn-submit-data')?.addEventListener('click', () => {
+      this.#submitDataContribution();
+      this.#playUi('click');
     });
   }
   
@@ -136,10 +248,12 @@ class AnimalQuestApp {
       
       switch (message.type) {
         case 'initialData': {
-          const { username, puzzle, userScore, userStreak, leaderboard } = message.data;
+          const { username, puzzle, userScore, userStreak, leaderboard, trainerProfile, dailyReward, sessionId } = message.data;
           this.username = username;
           this.userScore = userScore;
           this.puzzle = puzzle;
+          this.trainerProfile = trainerProfile;
+          this.sessionId = sessionId;
           
           // Update UI
           this.usernameLabel.innerText = username;
@@ -149,6 +263,18 @@ class AnimalQuestApp {
           this.emoji.textContent = puzzle.emoji;
           this.hintLabel.textContent = 'Guess the animal';
           this.#buildBoard(puzzle.letters, puzzle.answerLength);
+          
+          // Update economy UI
+          if (trainerProfile) {
+            this.#updateCurrency(trainerProfile.currency);
+            this.#updateInventory(trainerProfile.inventory);
+          }
+          
+          // Show daily reward if available
+          if (dailyReward) {
+            this.#showDailyReward(dailyReward);
+          }
+          
           // Reset arcade HUD
           this.arcadeScore = 0;
           this.combo = 1;
@@ -159,6 +285,9 @@ class AnimalQuestApp {
           if (Array.isArray(leaderboard) && leaderboard.length) {
             this.#renderLeaderboard(leaderboard);
           }
+          
+          // Load cosmetic store
+          postWebViewMessage({ type: 'getCosmeticStore' });
           break;
         }
         case 'updateScore': {
@@ -252,6 +381,121 @@ class AnimalQuestApp {
         case 'leaderboardData': {
           const { daily, arcade, streaks } = message.data;
           this.#renderLeaderboardData(daily, arcade, streaks);
+          break;
+        }
+        case 'purchaseResult': {
+          const { success, error, currency, inventory } = message.data;
+          if (success) {
+            this.#updateCurrency(currency);
+            this.#updateInventory(inventory);
+            this.#toast('Purchase successful!');
+          } else {
+            this.#toast(`Purchase failed: ${error || 'Unknown error'}`, 'error');
+          }
+          break;
+        }
+        case 'premiumResult': {
+          const { success, error, premiumTier, currency } = message.data;
+          if (success) {
+            this.#updateCurrency(currency);
+            this.#toast(`Premium subscription activated: ${premiumTier}!`);
+            this.#hideShop();
+          } else {
+            this.#toast(`Premium purchase failed: ${error || 'Unknown error'}`, 'error');
+          }
+          break;
+        }
+        case 'cosmeticResult': {
+          const { success, error, unlockedCosmetics, currency } = message.data;
+          if (success) {
+            this.#updateCurrency(currency);
+            this.#toast('Cosmetic unlocked!');
+          } else {
+            this.#toast(`Cosmetic purchase failed: ${error || 'Unknown error'}`, 'error');
+          }
+          break;
+        }
+        case 'cosmeticStore': {
+          const { items } = message.data;
+          this.cosmeticStore = items;
+          this.#renderCosmeticStore();
+          break;
+        }
+        case 'useItemResult': {
+          const { success, error, inventory } = message.data;
+          if (success) {
+            this.#updateInventory(inventory);
+            this.#toast('Item used successfully!');
+          } else {
+            this.#toast(`Failed to use item: ${error || 'Unknown error'}`, 'error');
+          }
+          break;
+        }
+        case 'educationalPartners': {
+          const { organizations } = message.data;
+          this.#renderEducationalPartners(organizations);
+          break;
+        }
+        case 'sponsoredContent': {
+          const { content } = message.data;
+          this.#renderSponsoredContent(content);
+          break;
+        }
+        case 'sponsoredContentError': {
+          const { error } = message.data;
+          this.#toast(`Failed to load content: ${error}`, 'error');
+          break;
+        }
+        case 'contentCompletionResult': {
+          const { success, rewards, impactPoints } = message.data;
+          if (success) {
+            this.#toast(`Activity completed! Earned ${impactPoints} impact points`, 'success');
+            this.#showContentRewards(rewards);
+          } else {
+            this.#toast('Failed to complete activity', 'error');
+          }
+          break;
+        }
+        case 'conservationImpact': {
+          const { personalImpact, globalImpact } = message.data;
+          this.#renderConservationImpact(personalImpact, globalImpact);
+          break;
+        }
+        case 'expertAMAs': {
+          const { amas } = message.data;
+          this.#renderExpertAMAs(amas);
+          break;
+        }
+        case 'amaQuestionResult': {
+          const { success } = message.data;
+          if (success) {
+            this.#toast('Question submitted successfully!', 'success');
+            this.#hideAmaQuestionOverlay();
+          } else {
+            this.#toast('Failed to submit question', 'error');
+          }
+          break;
+        }
+        case 'citizenScienceProjects': {
+          const { projects } = message.data;
+          this.#renderCitizenScienceProjects(projects);
+          break;
+        }
+        case 'dataContributionResult': {
+          const { success } = message.data;
+          if (success) {
+            this.#toast('Data contribution submitted successfully!', 'success');
+            this.#hideDataContributionOverlay();
+            // Refresh contributions list
+            postWebViewMessage({ type: 'getTrainerContributions' });
+          } else {
+            this.#toast('Failed to submit data contribution', 'error');
+          }
+          break;
+        }
+        case 'trainerContributions': {
+          const { contributions } = message.data;
+          this.#renderTrainerContributions(contributions);
           break;
         }
         default: {
@@ -752,3 +996,1061 @@ function postWebViewMessage(msg) {
 
 // Initialize the app
 new AnimalQuestApp();
+// Bat
+tle System Integration
+class BattleManager {
+  constructor(app) {
+    this.app = app;
+    this.currentBattle = null;
+    this.battleInterface = null;
+    this.isInBattle = false;
+  }
+
+  /**
+   * Start a battle
+   */
+  startBattle(battleData) {
+    this.currentBattle = battleData;
+    this.isInBattle = true;
+    
+    // Hide main game UI
+    document.getElementById('puzzle-section')?.classList.add('hidden');
+    document.getElementById('result-section')?.classList.add('hidden');
+    
+    // Create battle interface
+    this.createBattleInterface();
+    
+    // Initialize battle display
+    this.updateBattleDisplay();
+  }
+
+  /**
+   * Create the battle interface HTML
+   */
+  createBattleInterface() {
+    const gameRoot = document.getElementById('gameRoot');
+    if (!gameRoot) return;
+
+    const battleContainer = document.createElement('div');
+    battleContainer.id = 'battle-container';
+    battleContainer.className = 'battle-screen';
+    
+    battleContainer.innerHTML = `
+      <!-- Battle Header -->
+      <div class="battle-header">
+        <div class="trainer-info opponent">
+          <div class="trainer-name" id="battle-opponent-name">Wild Animal</div>
+          <div class="trainer-level" id="battle-opponent-level">Lv. 5</div>
+        </div>
+        <div class="battle-timer" id="battle-timer">30</div>
+        <div class="trainer-info player">
+          <div class="trainer-name" id="battle-player-name">Player</div>
+          <div class="trainer-level" id="battle-player-level">Lv. 1</div>
+        </div>
+      </div>
+
+      <!-- Battle Field -->
+      <div class="battle-field">
+        <!-- Opponent Animal -->
+        <div class="animal-container opponent" id="battle-opponent-animal">
+          <div class="animal-sprite" id="battle-opponent-sprite">🦁</div>
+          <div class="health-bar-container">
+            <div class="animal-name" id="battle-opponent-animal-name">Lion</div>
+            <div class="health-bar">
+              <div class="health-fill" id="battle-opponent-health" style="width: 100%"></div>
+              <div class="health-text" id="battle-opponent-health-text">100/100</div>
+            </div>
+            <div class="status-effects" id="battle-opponent-status"></div>
+          </div>
+        </div>
+
+        <!-- Player Animal -->
+        <div class="animal-container player" id="battle-player-animal">
+          <div class="animal-sprite" id="battle-player-sprite">🐺</div>
+          <div class="health-bar-container">
+            <div class="animal-name" id="battle-player-animal-name">Wolf</div>
+            <div class="health-bar">
+              <div class="health-fill" id="battle-player-health" style="width: 100%"></div>
+              <div class="health-text" id="battle-player-health-text">100/100</div>
+            </div>
+            <div class="status-effects" id="battle-player-status"></div>
+          </div>
+        </div>
+
+        <!-- Battle Effects -->
+        <div class="battle-effects" id="battle-effects"></div>
+      </div>
+
+      <!-- Battle Controls -->
+      <div class="battle-controls" id="battle-controls">
+        <!-- Main Menu -->
+        <div class="control-panel main-menu" id="battle-main-menu">
+          <button class="battle-button attack-btn" id="battle-attack-btn">
+            ⚔️ Attack
+          </button>
+          <button class="battle-button switch-btn" id="battle-switch-btn">
+            🔄 Switch
+          </button>
+          <button class="battle-button item-btn" id="battle-item-btn">
+            🎒 Items
+          </button>
+          <button class="battle-button forfeit-btn" id="battle-forfeit-btn">
+            🏃 Forfeit
+          </button>
+        </div>
+
+        <!-- Move Selection -->
+        <div class="control-panel move-menu hidden" id="battle-move-menu">
+          <div class="moves-grid" id="battle-moves-grid">
+            <!-- Moves will be populated dynamically -->
+          </div>
+          <button class="battle-button back-btn" id="battle-move-back-btn">← Back</button>
+        </div>
+      </div>
+
+      <!-- Battle Log -->
+      <div class="battle-log" id="battle-log">
+        <div class="log-content" id="battle-log-content">
+          <div class="log-message">Battle begins!</div>
+        </div>
+      </div>
+    `;
+
+    gameRoot.appendChild(battleContainer);
+    this.attachBattleEventListeners();
+  }
+
+  /**
+   * Attach event listeners for battle interface
+   */
+  attachBattleEventListeners() {
+    // Main menu buttons
+    document.getElementById('battle-attack-btn')?.addEventListener('click', () => this.showMoveMenu());
+    document.getElementById('battle-forfeit-btn')?.addEventListener('click', () => this.forfeitBattle());
+
+    // Back buttons
+    document.getElementById('battle-move-back-btn')?.addEventListener('click', () => this.showMainMenu());
+  }
+
+  /**
+   * Update battle display with current battle state
+   */
+  updateBattleDisplay() {
+    if (!this.currentBattle) return;
+
+    const playerAnimal = this.currentBattle.playerTeam[0];
+    const opponentAnimal = this.currentBattle.opponentTeam[0];
+
+    // Update player animal display
+    this.updateAnimalDisplay('player', playerAnimal);
+    
+    // Update opponent animal display
+    this.updateAnimalDisplay('opponent', opponentAnimal);
+
+    // Update trainer info
+    document.getElementById('battle-player-name').textContent = this.currentBattle.playerName || 'Player';
+    document.getElementById('battle-opponent-name').textContent = this.currentBattle.opponentName || 'Wild Animal';
+  }
+
+  /**
+   * Update animal display (health, name, sprite, status effects)
+   */
+  updateAnimalDisplay(side, animal) {
+    const nameEl = document.getElementById(`battle-${side}-animal-name`);
+    const spriteEl = document.getElementById(`battle-${side}-sprite`);
+    const healthFillEl = document.getElementById(`battle-${side}-health`);
+    const healthTextEl = document.getElementById(`battle-${side}-health-text`);
+
+    if (nameEl) nameEl.textContent = animal.nickname || animal.name;
+    if (spriteEl) spriteEl.textContent = this.getAnimalEmoji(animal);
+    
+    // Update health bar
+    const healthPercent = (animal.stats.health / animal.stats.maxHealth) * 100;
+    if (healthFillEl) {
+      healthFillEl.style.width = `${healthPercent}%`;
+      healthFillEl.className = `health-fill ${this.getHealthBarClass(healthPercent)}`;
+    }
+    
+    if (healthTextEl) {
+      healthTextEl.textContent = `${animal.stats.health}/${animal.stats.maxHealth}`;
+    }
+  }
+
+  /**
+   * Get emoji representation for an animal
+   */
+  getAnimalEmoji(animal) {
+    const emojiMap = {
+      'lion': '🦁',
+      'wolf': '🐺',
+      'bear': '🐻',
+      'eagle': '🦅',
+      'shark': '🦈',
+      'elephant': '🐘',
+      'tiger': '🐯',
+      'fox': '🦊',
+      'hippo': '🦛',
+      'giraffe': '🦒',
+      'panda': '🐼',
+      'crocodile': '🐊'
+    };
+    
+    return emojiMap[animal.name.toLowerCase()] || '🐾';
+  }
+
+  /**
+   * Get CSS class for health bar based on health percentage
+   */
+  getHealthBarClass(healthPercent) {
+    if (healthPercent > 50) return 'health-high';
+    if (healthPercent > 25) return 'health-medium';
+    return 'health-low';
+  }
+
+  /**
+   * Show the main battle menu
+   */
+  showMainMenu() {
+    this.hideAllBattleMenus();
+    document.getElementById('battle-main-menu')?.classList.remove('hidden');
+  }
+
+  /**
+   * Show the move selection menu
+   */
+  showMoveMenu() {
+    if (!this.currentBattle) return;
+    
+    const playerAnimal = this.currentBattle.playerTeam[0];
+    this.populateMoveMenu(playerAnimal.moves);
+    
+    this.hideAllBattleMenus();
+    document.getElementById('battle-move-menu')?.classList.remove('hidden');
+  }
+
+  /**
+   * Hide all battle menu panels
+   */
+  hideAllBattleMenus() {
+    document.querySelectorAll('#battle-container .control-panel').forEach(panel => {
+      panel.classList.add('hidden');
+    });
+  }
+
+  /**
+   * Populate the move selection menu
+   */
+  populateMoveMenu(moves) {
+    const movesGrid = document.getElementById('battle-moves-grid');
+    if (!movesGrid) return;
+
+    movesGrid.innerHTML = '';
+    
+    moves.forEach((move, index) => {
+      const moveButton = document.createElement('button');
+      moveButton.className = 'move-button';
+      moveButton.innerHTML = `
+        <div class="move-name">${move.name}</div>
+        <div class="move-info">
+          <span class="move-type">${move.type}</span>
+          <span class="move-power">PWR: ${move.power}</span>
+        </div>
+        <div class="move-description">${move.description}</div>
+      `;
+      
+      moveButton.addEventListener('click', () => this.selectMove(move, index));
+      movesGrid.appendChild(moveButton);
+    });
+  }
+
+  /**
+   * Handle move selection
+   */
+  selectMove(move, moveIndex) {
+    this.addBattleLogMessage(`${this.currentBattle.playerTeam[0].name} used ${move.name}!`);
+    
+    // Send battle action to backend
+    postWebViewMessage({
+      type: 'battleAction',
+      data: {
+        action: 'attack',
+        moveIndex: moveIndex,
+        targetIndex: 0
+      }
+    });
+    
+    this.showMainMenu();
+  }
+
+  /**
+   * Handle forfeit battle
+   */
+  forfeitBattle() {
+    this.addBattleLogMessage('You forfeited the battle!');
+    
+    // Send forfeit action to backend
+    postWebViewMessage({
+      type: 'battleAction',
+      data: {
+        action: 'forfeit'
+      }
+    });
+    
+    // End battle after a delay
+    setTimeout(() => {
+      this.endBattle({ winner: 'opponent', experienceGained: 0 });
+    }, 2000);
+  }
+
+  /**
+   * Add a message to the battle log
+   */
+  addBattleLogMessage(message) {
+    const logContent = document.getElementById('battle-log-content');
+    if (!logContent) return;
+
+    const messageEl = document.createElement('div');
+    messageEl.className = 'log-message';
+    messageEl.textContent = message;
+    
+    logContent.appendChild(messageEl);
+    logContent.scrollTop = logContent.scrollHeight;
+  }
+
+  /**
+   * Play battle animation
+   */
+  async playBattleAnimation(animation) {
+    return new Promise((resolve) => {
+      const effectsContainer = document.getElementById('battle-effects');
+      if (!effectsContainer) {
+        resolve();
+        return;
+      }
+
+      switch (animation.type) {
+        case 'attack':
+          this.animateAttack(animation, resolve);
+          break;
+        case 'damage':
+          this.animateDamage(animation, resolve);
+          break;
+        default:
+          resolve();
+      }
+    });
+  }
+
+  /**
+   * Animate an attack
+   */
+  animateAttack(animation, callback) {
+    const attackerEl = document.getElementById(
+      animation.source === 'player' ? 'battle-player-sprite' : 'battle-opponent-sprite'
+    );
+    
+    if (attackerEl) {
+      attackerEl.classList.add('attack-animation');
+      setTimeout(() => {
+        attackerEl.classList.remove('attack-animation');
+        callback();
+      }, 600);
+    } else {
+      callback();
+    }
+  }
+
+  /**
+   * Animate damage
+   */
+  animateDamage(animation, callback) {
+    const targetEl = document.getElementById(
+      animation.target === 'player' ? 'battle-player-animal' : 'battle-opponent-animal'
+    );
+    
+    if (targetEl) {
+      targetEl.classList.add('damage-animation');
+      
+      // Show damage number
+      const damageEl = document.createElement('div');
+      damageEl.className = 'damage-number';
+      damageEl.textContent = `-${animation.value}`;
+      targetEl.appendChild(damageEl);
+      
+      setTimeout(() => {
+        targetEl.classList.remove('damage-animation');
+        damageEl.remove();
+        callback();
+      }, 800);
+    } else {
+      callback();
+    }
+  }
+
+  /**
+   * End the battle and show results
+   */
+  endBattle(result) {
+    this.isInBattle = false;
+    
+    // Remove battle interface
+    const battleContainer = document.getElementById('battle-container');
+    if (battleContainer) {
+      battleContainer.remove();
+    }
+    
+    // Show victory/defeat screen
+    this.showBattleResult(result);
+    
+    // Show main game UI
+    document.getElementById('puzzle-section')?.classList.remove('hidden');
+  }
+
+  /**
+   * Show battle result screen
+   */
+  showBattleResult(result) {
+    const victoryScreen = document.createElement('div');
+    victoryScreen.className = 'victory-screen';
+    victoryScreen.innerHTML = `
+      <div class="victory-content">
+        <h2 class="victory-title">${result.winner === 'player' ? '🎉 Victory!' : '💔 Defeat'}</h2>
+        <div class="victory-stats">
+          <div class="exp-gained">Experience Gained: +${result.experienceGained}</div>
+        </div>
+        <button class="victory-button" id="victory-continue">Continue</button>
+      </div>
+    `;
+    
+    document.getElementById('gameRoot').appendChild(victoryScreen);
+    
+    document.getElementById('victory-continue')?.addEventListener('click', () => {
+      victoryScreen.remove();
+    });
+  }
+
+  /**
+   * Process battle update from backend
+   */
+  processBattleUpdate(updateData) {
+    if (!this.isInBattle) return;
+
+    switch (updateData.type) {
+      case 'battleState':
+        this.currentBattle = updateData.battle;
+        this.updateBattleDisplay();
+        break;
+        
+      case 'battleMessage':
+        this.addBattleLogMessage(updateData.message);
+        break;
+        
+      case 'battleAnimation':
+        this.playBattleAnimation(updateData.animation);
+        break;
+        
+      case 'battleEnd':
+        this.endBattle(updateData.result);
+        break;
+    }
+  }
+}
+
+// Add battle manager to the main app
+if (typeof AnimalQuestApp !== 'undefined') {
+  AnimalQuestApp.prototype.initBattleSystem = function() {
+    this.battleManager = new BattleManager(this);
+  };
+
+  // Add battle message handling to the main message handler
+  const originalOnMessage = AnimalQuestApp.prototype._onMessage;
+  AnimalQuestApp.prototype._onMessage = function(ev) {
+    // Call original message handler
+    originalOnMessage.call(this, ev);
+    
+    // Handle battle-specific messages
+    if (ev.data.type === 'devvit-message') {
+      const { message } = ev.data.data;
+      
+      switch (message.type) {
+        case 'startBattle':
+          if (this.battleManager) {
+            this.battleManager.startBattle(message.data);
+          }
+          break;
+          
+        case 'battleUpdate':
+          if (this.battleManager) {
+            this.battleManager.processBattleUpdate(message.data);
+          }
+          break;
+      }
+    }
+  };
+
+  // Initialize battle system when app is created
+  const originalConstructor = AnimalQuestApp;
+  AnimalQuestApp = function() {
+    originalConstructor.call(this);
+    this.initBattleSystem();
+  };
+  
+  // Copy prototype
+  AnimalQuestApp.prototype = originalConstructor.prototype;
+}  // Economy
+ methods
+  #updateCurrency(currency) {
+    if (!currency) return;
+    if (this.pawCoinsLabel) this.pawCoinsLabel.innerText = currency.pawCoins.toString();
+    if (this.researchPointsLabel) this.researchPointsLabel.innerText = currency.researchPoints.toString();
+    if (this.battleTokensLabel) this.battleTokensLabel.innerText = currency.battleTokens.toString();
+  }
+
+  #updateInventory(inventory) {
+    if (!inventory) return;
+    // Update inventory display if needed
+    console.log('Inventory updated:', inventory);
+  }
+
+  #showShop() {
+    if (this.shopOverlay) {
+      this.shopOverlay.classList.remove('hidden');
+      this.#setupShopEventListeners();
+    }
+  }
+
+  #hideShop() {
+    if (this.shopOverlay) {
+      this.shopOverlay.classList.add('hidden');
+    }
+  }
+
+  #switchShopTab(tabName) {
+    // Hide all tabs
+    document.querySelectorAll('.shop-tab').forEach(tab => {
+      tab.classList.remove('active');
+    });
+    document.querySelectorAll('.shop-tabs .tab-btn').forEach(btn => {
+      btn.classList.remove('active');
+    });
+
+    // Show selected tab
+    const selectedTab = document.querySelector(`#shop-${tabName}`);
+    const selectedBtn = document.querySelector(`[data-tab="${tabName}"]`);
+    if (selectedTab) selectedTab.classList.add('active');
+    if (selectedBtn) selectedBtn.classList.add('active');
+  }
+
+  #setupShopEventListeners() {
+    // Item purchase buttons
+    document.querySelectorAll('.shop-item .btn-buy').forEach(btn => {
+      btn.onclick = (e) => {
+        const shopItem = e.target.closest('.shop-item');
+        const itemId = shopItem.dataset.item;
+        this.#purchaseItem(itemId);
+      };
+    });
+
+    // Premium purchase buttons
+    document.querySelectorAll('.premium-tier .btn-buy-premium').forEach(btn => {
+      btn.onclick = (e) => {
+        const premiumTier = e.target.closest('.premium-tier');
+        const tier = premiumTier.dataset.tier;
+        this.#purchasePremium(tier);
+      };
+    });
+  }
+
+  #purchaseItem(itemId) {
+    postWebViewMessage({
+      type: 'purchaseItem',
+      data: {
+        itemId: itemId,
+        quantity: 1,
+        sessionId: this.sessionId
+      }
+    });
+  }
+
+  #purchasePremium(tier) {
+    postWebViewMessage({
+      type: 'purchasePremium',
+      data: {
+        tier: tier,
+        duration: 30, // 30 days
+        sessionId: this.sessionId
+      }
+    });
+  }
+
+  #purchaseCosmetic(cosmeticId) {
+    postWebViewMessage({
+      type: 'purchaseCosmetic',
+      data: {
+        cosmeticId: cosmeticId,
+        sessionId: this.sessionId
+      }
+    });
+  }
+
+  #renderCosmeticStore() {
+    const cosmeticsGrid = document.querySelector('#cosmetics-grid');
+    if (!cosmeticsGrid || !this.cosmeticStore) return;
+
+    cosmeticsGrid.innerHTML = '';
+    
+    this.cosmeticStore.forEach(cosmetic => {
+      const itemDiv = document.createElement('div');
+      itemDiv.className = 'shop-item';
+      itemDiv.innerHTML = `
+        <div class="item-icon">${this.#getCosmeticIcon(cosmetic.category)}</div>
+        <div class="item-name">${cosmetic.name}</div>
+        <div class="item-description">${cosmetic.description}</div>
+        <div class="item-price">${this.#formatPrice(cosmetic.price)}</div>
+        <button class="btn-buy" ${cosmetic.premiumOnly ? 'data-premium="true"' : ''}>
+          ${cosmetic.premiumOnly ? 'Premium Only' : 'Buy'}
+        </button>
+      `;
+      
+      const buyBtn = itemDiv.querySelector('.btn-buy');
+      buyBtn.onclick = () => this.#purchaseCosmetic(cosmetic.id);
+      
+      cosmeticsGrid.appendChild(itemDiv);
+    });
+  }
+
+  #getCosmeticIcon(category) {
+    const icons = {
+      'trainer_outfit': '👕',
+      'animal_accessory': '👑',
+      'habitat_theme': '🎨',
+      'battle_effect': '⚡',
+      'ui_theme': '🖼️'
+    };
+    return icons[category] || '🎁';
+  }
+
+  #formatPrice(price) {
+    const parts = [];
+    if (price.pawCoins > 0) parts.push(`🪙 ${price.pawCoins}`);
+    if (price.researchPoints > 0) parts.push(`🔬 ${price.researchPoints}`);
+    if (price.battleTokens > 0) parts.push(`⚔️ ${price.battleTokens}`);
+    return parts.join(' ');
+  }
+
+  #showDailyReward(reward) {
+    if (!this.dailyRewardOverlay) return;
+    
+    // Update reward display
+    const rewardDay = document.querySelector('#rewardDay');
+    const rewardPawCoins = document.querySelector('#rewardPawCoins');
+    const rewardResearchPoints = document.querySelector('#rewardResearchPoints');
+    const rewardBattleTokens = document.querySelector('#rewardBattleTokens');
+    const rewardItemsList = document.querySelector('#rewardItemsList');
+    
+    if (rewardDay) rewardDay.textContent = reward.day.toString();
+    if (rewardPawCoins) rewardPawCoins.textContent = reward.currency.pawCoins.toString();
+    if (rewardResearchPoints) rewardResearchPoints.textContent = reward.currency.researchPoints.toString();
+    if (rewardBattleTokens) rewardBattleTokens.textContent = reward.currency.battleTokens.toString();
+    
+    if (rewardItemsList && reward.items && reward.items.length > 0) {
+      rewardItemsList.innerHTML = reward.items.map(item => 
+        `<div class="bonus-item">${item.name} x${item.quantity}</div>`
+      ).join('');
+    }
+    
+    this.dailyRewardOverlay.classList.remove('hidden');
+  }
+
+  #claimDailyReward() {
+    if (this.dailyRewardOverlay) {
+      this.dailyRewardOverlay.classList.add('hidden');
+      this.#toast('Daily reward claimed!');
+    }
+  }
+
+  #toast(message, type = 'success') {
+    if (!this.toast) return;
+    
+    this.toast.textContent = message;
+    this.toast.className = `toast ${type}`;
+    this.toast.classList.remove('hidden');
+    
+    setTimeout(() => {
+      this.toast.classList.add('hidden');
+    }, 3000);
+  }
+}  // Educati
+onal Partnership Methods
+  #showEducationOverlay() {
+    if (this.educationOverlay) {
+      this.educationOverlay.classList.remove('hidden');
+      // Load initial data
+      postWebViewMessage({ type: 'getEducationalPartners' });
+      postWebViewMessage({ type: 'getSponsoredContent' });
+      postWebViewMessage({ type: 'getConservationImpact' });
+      postWebViewMessage({ type: 'getExpertAMAs' });
+      postWebViewMessage({ type: 'getCitizenScienceProjects' });
+      postWebViewMessage({ type: 'getTrainerContributions' });
+    }
+  }
+
+  #hideEducationOverlay() {
+    if (this.educationOverlay) {
+      this.educationOverlay.classList.add('hidden');
+    }
+  }
+
+  #switchEducationTab(tabName) {
+    // Hide all tabs
+    document.querySelectorAll('.education-tab').forEach(tab => {
+      tab.classList.remove('active');
+    });
+    
+    // Remove active class from all tab buttons
+    document.querySelectorAll('.education-tabs .tab-btn').forEach(btn => {
+      btn.classList.remove('active');
+    });
+    
+    // Show selected tab
+    const selectedTab = document.querySelector(`#education-${tabName}`);
+    if (selectedTab) {
+      selectedTab.classList.add('active');
+    }
+    
+    // Add active class to selected button
+    const selectedBtn = document.querySelector(`.education-tabs .tab-btn[data-tab="${tabName}"]`);
+    if (selectedBtn) {
+      selectedBtn.classList.add('active');
+    }
+  }
+
+  #renderEducationalPartners(organizations) {
+    const partnersGrid = document.querySelector('#partners-grid');
+    if (!partnersGrid) return;
+
+    partnersGrid.innerHTML = '';
+    
+    organizations.forEach(org => {
+      const partnerCard = document.createElement('div');
+      partnerCard.className = 'partner-card';
+      partnerCard.innerHTML = `
+        <div class="partner-header">
+          <div class="partner-logo">🌍</div>
+          <div>
+            <div class="partner-name">${org.name}</div>
+            <div class="partner-level ${org.partnershipLevel}">${org.partnershipLevel}</div>
+          </div>
+        </div>
+        <div class="partner-description">${org.description}</div>
+        <div class="partner-focus-areas">
+          ${org.focusAreas.map(area => `<span class="focus-area-tag">${area.replace('_', ' ')}</span>`).join('')}
+        </div>
+      `;
+      
+      partnerCard.addEventListener('click', () => {
+        window.open(org.website, '_blank');
+      });
+      
+      partnersGrid.appendChild(partnerCard);
+    });
+  }
+
+  #renderSponsoredContent(content) {
+    const contentList = document.querySelector('#sponsored-content-list');
+    if (!contentList) return;
+
+    contentList.innerHTML = '';
+    
+    content.forEach(item => {
+      const contentItem = document.createElement('div');
+      contentItem.className = 'content-item';
+      contentItem.innerHTML = `
+        <div class="content-header">
+          <div>
+            <div class="content-title">${item.title}</div>
+            <div class="content-type ${item.contentType}">${item.contentType.replace('_', ' ')}</div>
+          </div>
+        </div>
+        <div class="content-description">${item.description}</div>
+        <div class="content-rewards">
+          ${item.rewards.map(reward => `<span class="reward-badge">${reward.description}</span>`).join('')}
+        </div>
+      `;
+      
+      contentItem.addEventListener('click', () => {
+        this.#showContentDetail(item);
+      });
+      
+      contentList.appendChild(contentItem);
+    });
+  }
+
+  #showContentDetail(content) {
+    const overlay = this.contentDetailOverlay;
+    const title = document.querySelector('#content-detail-title');
+    const body = document.querySelector('#content-detail-body');
+    
+    if (!overlay || !title || !body) return;
+
+    title.textContent = content.title;
+    body.innerHTML = `
+      <div class="content-detail-info">
+        <h3>Description</h3>
+        <p>${content.description}</p>
+        
+        <h3>Educational Material</h3>
+        <div class="educational-facts">
+          <h4>Key Facts:</h4>
+          <ul>
+            ${content.educationalMaterial.facts.map(fact => `<li>${fact}</li>`).join('')}
+          </ul>
+        </div>
+        
+        <h3>Rewards</h3>
+        <div class="content-rewards">
+          ${content.rewards.map(reward => `<div class="reward-item">${reward.description}: ${reward.value}</div>`).join('')}
+        </div>
+      </div>
+    `;
+    
+    // Set up completion button
+    const completeBtn = document.querySelector('#btn-complete-content');
+    if (completeBtn) {
+      completeBtn.onclick = () => {
+        postWebViewMessage({ 
+          type: 'completeSponsoredContent', 
+          data: { 
+            contentId: content.id,
+            completionData: { qualityScore: 0.9 } // Simulate high quality completion
+          }
+        });
+        this.#hideContentDetailOverlay();
+      };
+      completeBtn.classList.remove('hidden');
+    }
+    
+    overlay.classList.remove('hidden');
+  }
+
+  #hideContentDetailOverlay() {
+    if (this.contentDetailOverlay) {
+      this.contentDetailOverlay.classList.add('hidden');
+    }
+  }
+
+  #renderConservationImpact(personalImpact, globalImpact) {
+    const personalContainer = document.querySelector('#personal-impact');
+    const globalContainer = document.querySelector('#global-impact');
+    
+    if (personalContainer) {
+      personalContainer.innerHTML = '';
+      personalImpact.forEach(impact => {
+        const statDiv = document.createElement('div');
+        statDiv.className = 'impact-stat';
+        statDiv.innerHTML = `
+          <div class="impact-stat-value">${impact.impactScore}</div>
+          <div class="impact-stat-label">Impact Score</div>
+        `;
+        personalContainer.appendChild(statDiv);
+      });
+    }
+    
+    if (globalContainer) {
+      globalContainer.innerHTML = `
+        <div class="impact-stat">
+          <div class="impact-stat-value">$${globalImpact.totalDonations.toFixed(2)}</div>
+          <div class="impact-stat-label">Total Donations</div>
+        </div>
+        <div class="impact-stat">
+          <div class="impact-stat-value">${globalImpact.totalActivities}</div>
+          <div class="impact-stat-label">Activities Completed</div>
+        </div>
+        <div class="impact-stat">
+          <div class="impact-stat-value">${globalImpact.totalResearchContributions}</div>
+          <div class="impact-stat-label">Research Contributions</div>
+        </div>
+        <div class="impact-stat">
+          <div class="impact-stat-value">${globalImpact.totalImpactScore}</div>
+          <div class="impact-stat-label">Global Impact Score</div>
+        </div>
+      `;
+    }
+  }
+
+  #renderExpertAMAs(amas) {
+    const amasList = document.querySelector('#amas-list');
+    if (!amasList) return;
+
+    amasList.innerHTML = '';
+    
+    amas.forEach(ama => {
+      const amaItem = document.createElement('div');
+      amaItem.className = 'ama-item';
+      amaItem.innerHTML = `
+        <div class="ama-expert">${ama.expertName}</div>
+        <div class="ama-title">${ama.expertTitle}</div>
+        <div class="ama-topic">${ama.topic}</div>
+        <div class="ama-description">${ama.description}</div>
+        <div class="ama-details">
+          <span>📅 ${new Date(ama.scheduledDate).toLocaleDateString()}</span>
+          <span>👥 ${ama.currentParticipants}/${ama.maxParticipants}</span>
+          <span>⏱️ ${Math.floor(ama.duration / 60)} min</span>
+        </div>
+        <div class="ama-actions">
+          <button class="btn btn-primary ask-question-btn" data-ama-id="${ama.id}">Ask Question</button>
+        </div>
+      `;
+      
+      const askBtn = amaItem.querySelector('.ask-question-btn');
+      askBtn.addEventListener('click', () => {
+        this.currentAmaId = ama.id;
+        this.#showAmaQuestionOverlay();
+      });
+      
+      amasList.appendChild(amaItem);
+    });
+  }
+
+  #showAmaQuestionOverlay() {
+    if (this.amaQuestionOverlay) {
+      this.amaQuestionOverlay.classList.remove('hidden');
+      // Clear previous question
+      const textarea = document.querySelector('#ama-question-text');
+      if (textarea) textarea.value = '';
+    }
+  }
+
+  #hideAmaQuestionOverlay() {
+    if (this.amaQuestionOverlay) {
+      this.amaQuestionOverlay.classList.add('hidden');
+    }
+  }
+
+  #submitAmaQuestion() {
+    const textarea = document.querySelector('#ama-question-text');
+    if (!textarea || !this.currentAmaId) return;
+
+    const question = textarea.value.trim();
+    if (!question) {
+      this.#toast('Please enter a question', 'error');
+      return;
+    }
+
+    postWebViewMessage({
+      type: 'submitAMAQuestion',
+      data: {
+        amaId: this.currentAmaId,
+        question: question
+      }
+    });
+  }
+
+  #renderCitizenScienceProjects(projects) {
+    const projectsList = document.querySelector('#citizen-science-projects');
+    if (!projectsList) return;
+
+    projectsList.innerHTML = '';
+    
+    projects.forEach(project => {
+      const projectItem = document.createElement('div');
+      projectItem.className = 'project-item';
+      projectItem.innerHTML = `
+        <div class="project-title">${project.title}</div>
+        <div class="project-description">${project.description}</div>
+        <div class="project-objectives">
+          <h4>Objectives:</h4>
+          <ul>
+            ${project.objectives.map(obj => `<li>${obj}</li>`).join('')}
+          </ul>
+        </div>
+        <div class="project-stats">
+          <span>👥 ${project.participantCount} participants</span>
+          <span>📊 ${project.dataPointsCollected} data points</span>
+        </div>
+        <div class="project-actions">
+          <button class="btn btn-primary contribute-btn" data-project-id="${project.id}">Contribute Data</button>
+        </div>
+      `;
+      
+      const contributeBtn = projectItem.querySelector('.contribute-btn');
+      contributeBtn.addEventListener('click', () => {
+        this.currentProjectId = project.id;
+        this.#showDataContributionOverlay();
+      });
+      
+      projectsList.appendChild(projectItem);
+    });
+  }
+
+  #showDataContributionOverlay() {
+    if (this.dataContributionOverlay) {
+      this.dataContributionOverlay.classList.remove('hidden');
+      // Clear previous data
+      document.querySelector('#data-location').value = '';
+      document.querySelector('#data-details').value = '';
+    }
+  }
+
+  #hideDataContributionOverlay() {
+    if (this.dataContributionOverlay) {
+      this.dataContributionOverlay.classList.add('hidden');
+    }
+  }
+
+  #submitDataContribution() {
+    if (!this.currentProjectId) return;
+
+    const dataType = document.querySelector('#data-type').value;
+    const location = document.querySelector('#data-location').value;
+    const details = document.querySelector('#data-details').value.trim();
+
+    if (!details) {
+      this.#toast('Please provide details about your observation', 'error');
+      return;
+    }
+
+    postWebViewMessage({
+      type: 'submitDataContribution',
+      data: {
+        projectId: this.currentProjectId,
+        dataType: dataType,
+        data: { details: details },
+        location: location || undefined
+      }
+    });
+  }
+
+  #renderTrainerContributions(contributions) {
+    const contributionsList = document.querySelector('#trainer-contributions');
+    if (!contributionsList) return;
+
+    contributionsList.innerHTML = '';
+    
+    if (contributions.length === 0) {
+      contributionsList.innerHTML = '<p>No contributions yet. Start contributing to citizen science projects!</p>';
+      return;
+    }
+    
+    contributions.forEach(contribution => {
+      const contributionItem = document.createElement('div');
+      contributionItem.className = 'contribution-item';
+      contributionItem.innerHTML = `
+        <div class="contribution-header">
+          <div class="contribution-type">${contribution.dataType.replace('_', ' ')}</div>
+          <div class="contribution-date">${new Date(contribution.timestamp).toLocaleDateString()}</div>
+        </div>
+        <div class="contribution-details">${contribution.data.details || 'Data contribution'}</div>
+        ${contribution.location ? `<div class="contribution-location">📍 ${contribution.location}</div>` : ''}
+      `;
+      
+      contributionsList.appendChild(contributionItem);
+    });
+  }
+
+  #showContentRewards(rewards) {
+    // Simple reward display - could be enhanced with a modal
+    const rewardText = rewards.map(r => r.description).join(', ');
+    this.#toast(`Rewards earned: ${rewardText}`, 'success');
+  }
+}
