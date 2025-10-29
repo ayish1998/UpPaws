@@ -345,8 +345,8 @@ export class MentorshipManager implements MentorshipSystem {
 
     return pair;
   }
-}  as
-ync completeMentorshipSession(pairId: string, sessionData: MentorshipSession): Promise<void> {
+
+  async completeMentorshipSession(pairId: string, sessionData: MentorshipSession): Promise<void> {
     const pair = this.mentorshipPairs.get(pairId);
     if (!pair || pair.status !== PairStatus.ACTIVE) {
       throw new Error('Invalid or inactive mentorship pair');

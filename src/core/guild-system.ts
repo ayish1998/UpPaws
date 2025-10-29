@@ -261,8 +261,8 @@ export class GuildManager implements GuildSystem {
 
     return guild;
   }
-}  as
-ync joinGuild(guildId: string, trainerId: string): Promise<boolean> {
+
+  async joinGuild(guildId: string, trainerId: string): Promise<boolean> {
     // Check if trainer is already in a guild
     if (this.membershipIndex.has(trainerId)) {
       return false;

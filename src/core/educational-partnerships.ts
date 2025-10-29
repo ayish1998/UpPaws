@@ -1,6 +1,6 @@
 import { ConservationMission, EducationalContent } from '../types/habitat.js';
 import { TrainerProfile } from '../types/trainer.js';
-import { Rarity } from '../types/common.js';
+import { Rarity, HabitatType } from '../types/common.js';
 
 export interface WildlifeOrganization {
   id: string;
