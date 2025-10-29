@@ -2213,10 +2213,59 @@ Devvit.addCustomPostType({
       },
     });
 
-    // Render the custom post type - Load game interface immediately
+    // Render the custom post type with immediate game interface
     return (
       <vstack grow padding="none">
-        {webView}
+        <vstack grow padding="large" gap="large" alignment="top center">
+          {/* Game Header */}
+          <vstack alignment="middle center" padding="medium" gap="small" backgroundColor="#FF6B35" cornerRadius="large">
+            <text size="xlarge" weight="bold" color="white">🐾 {puzzle ? `${puzzle.emoji} UpPaws Animal Trainer` : 'UpPaws Animal Trainer'}</text>
+            <text size="medium" color="rgba(255,255,255,0.9)">Professional Animal Training RPG</text>
+          </vstack>
+          
+          {/* Player Stats HUD */}
+          <hstack gap="small" alignment="center middle">
+            <hstack borderRadius="full" padding="small" backgroundColor="#FF6B35" gap="xsmall" alignment="center middle">
+              <image url="https://www.redditstatic.com/avatars/defaults/v2/avatar_default_1.png" size="xsmall" />
+              <text size="small" weight="bold" color="white">u/{username ?? 'anonymous'}</text>
+            </hstack>
+            <hstack borderRadius="full" padding="small" backgroundColor="#FFD700" gap="xsmall" alignment="center middle">
+              <text size="small" weight="bold" color="#1A202C">⭐ {score ?? '0'}</text>
+            </hstack>
+            <hstack borderRadius="full" padding="small" backgroundColor="#4ECDC4" gap="xsmall" alignment="center middle">
+              <text size="small" weight="bold" color="white">🔥 {streak ?? '0'}</text>
+            </hstack>
+          </hstack>
+          
+          {/* Main Game Interface */}
+          <vstack borderRadius="large" padding="large" gap="large" backgroundColor="rgba(255,255,255,0.95)" width="full" alignment="middle center">
+            <vstack alignment="middle center" gap="medium">
+              <text weight="bold" size="xlarge" color="#2D3748">🎮 Professional Game Interface</text>
+              <text size="medium" alignment="center" color="#4A5568">Experience console-quality gaming with stunning visuals, animations, and effects!</text>
+            </vstack>
+            
+            {/* Game Features */}
+            <vstack gap="small" alignment="start stretch">
+              <text size="medium" color="#2D3748">✨ Stunning visual effects and animations</text>
+              <text size="medium" color="#2D3748">🎯 Interactive puzzle gameplay</text>
+              <text size="medium" color="#2D3748">⚔️ Battle system with wild animals</text>
+              <text size="medium" color="#2D3748">🏆 Leaderboards and achievements</text>
+              <text size="medium" color="#2D3748">🛒 In-game shop and economy</text>
+              <text size="medium" color="#2D3748">🗺️ World exploration system</text>
+            </vstack>
+            
+            {/* Launch Game Button */}
+            <vstack alignment="middle center" gap="medium">
+              <button appearance="primary" size="large" onPress={() => webView.mount()}>
+                🚀 Launch Game Interface
+              </button>
+              <text size="small" alignment="center" color="#718096">Click above to experience the full game interface</text>
+            </vstack>
+          </vstack>
+          
+          {/* Footer */}
+          <text size="xsmall" alignment="center" color="#718096">Built for Reddit Hackathon — UpPaws Animal Trainer RPG</text>
+        </vstack>
       </vstack>
     );
   },

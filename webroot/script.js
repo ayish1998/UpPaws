@@ -290,8 +290,10 @@ class AnimalQuestApp {
           postWebViewMessage({ type: 'getCosmeticStore' });
           
           // Auto-start the game instead of showing start overlay
-          this.mode = 'daily';
-          this.#begin();
+          setTimeout(() => {
+            this.mode = 'daily';
+            this.#begin();
+          }, 500);
           break;
         }
         case 'updateScore': {
@@ -788,7 +790,10 @@ class AnimalQuestApp {
       setTimeout(() => this.#begin(), 400);
       return;
     }
-    if (this.startOverlay) this.startOverlay.classList.remove('visible');
+    if (this.startOverlay) {
+      this.startOverlay.classList.remove('visible');
+      this.startOverlay.classList.add('hidden');
+    }
     this.#countdown(() => {
       this.#toast('Go!');
       this.#startTimer();
