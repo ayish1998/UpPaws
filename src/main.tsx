@@ -91,6 +91,71 @@ function getDailyPuzzle() {
   };
 }
 
+// Helper functions for battle system
+function generateWildAnimal() {
+  const wildAnimals = [
+    {
+      id: 'wild_wolf',
+      name: 'Wild Wolf',
+      level: Math.floor(Math.random() * 10) + 5,
+      stats: {
+        health: 60 + Math.floor(Math.random() * 20),
+        maxHealth: 60 + Math.floor(Math.random() * 20),
+        attack: 55 + Math.floor(Math.random() * 15),
+        defense: 45 + Math.floor(Math.random() * 15),
+        speed: 50 + Math.floor(Math.random() * 20),
+        intelligence: 40 + Math.floor(Math.random() * 10),
+        stamina: 55 + Math.floor(Math.random() * 15)
+      },
+      moves: [
+        { id: 'bite', name: 'Bite', type: 'forest', power: 50, accuracy: 95 },
+        { id: 'howl', name: 'Howl', type: 'forest', power: 0, accuracy: 100 }
+      ]
+    },
+    {
+      id: 'wild_bear',
+      name: 'Wild Bear',
+      level: Math.floor(Math.random() * 8) + 7,
+      stats: {
+        health: 80 + Math.floor(Math.random() * 25),
+        maxHealth: 80 + Math.floor(Math.random() * 25),
+        attack: 70 + Math.floor(Math.random() * 20),
+        defense: 60 + Math.floor(Math.random() * 20),
+        speed: 35 + Math.floor(Math.random() * 15),
+        intelligence: 45 + Math.floor(Math.random() * 10),
+        stamina: 70 + Math.floor(Math.random() * 20)
+      },
+      moves: [
+        { id: 'claw', name: 'Claw', type: 'forest', power: 60, accuracy: 90 },
+        { id: 'roar', name: 'Roar', type: 'forest', power: 0, accuracy: 100 }
+      ]
+    }
+  ];
+  
+  return wildAnimals[Math.floor(Math.random() * wildAnimals.length)];
+}
+
+function generatePlayerAnimal() {
+  return {
+    id: 'player_wolf',
+    name: 'Wolf',
+    level: 8,
+    stats: {
+      health: 75,
+      maxHealth: 75,
+      attack: 65,
+      defense: 55,
+      speed: 60,
+      intelligence: 50,
+      stamina: 65
+    },
+    moves: [
+      { id: 'bite', name: 'Bite', type: 'forest', power: 60, accuracy: 100 },
+      { id: 'howl', name: 'Howl', type: 'forest', power: 0, accuracy: 100 }
+    ]
+  };
+}
+
 // Add a custom post type to Devvit
 Devvit.addCustomPostType({
   name: 'AnimalQuest Puzzle',
@@ -532,8 +597,8 @@ Devvit.addCustomPostType({
               break;
             case 'startBattle': {
               // Start a battle with a wild animal
-              const wildAnimal = this.#generateWildAnimal();
-              const playerAnimal = this.#generatePlayerAnimal();
+              const wildAnimal = generateWildAnimal();
+              const playerAnimal = generatePlayerAnimal();
               
               const battleData = {
                 playerName: username,
