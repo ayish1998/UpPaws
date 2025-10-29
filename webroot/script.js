@@ -248,7 +248,10 @@ class AnimalQuestApp {
       
       switch (message.type) {
         case 'initialData': {
+          console.log('Received initialData:', message.data);
           const { username, puzzle, userScore, userStreak, leaderboard, trainerProfile, dailyReward, sessionId } = message.data;
+          console.log('Puzzle data:', puzzle);
+          
           this.username = username;
           this.userScore = userScore;
           this.puzzle = puzzle;
@@ -527,6 +530,15 @@ class AnimalQuestApp {
 
   /** Build tiles and slots */
   #buildBoard(letters, answerLength) {
+    console.log('Building board with letters:', letters, 'answerLength:', answerLength);
+    console.log('answerSlots element:', this.answerSlots);
+    console.log('letterBank element:', this.letterBank);
+    
+    if (!this.answerSlots || !this.letterBank) {
+      console.error('Missing DOM elements for game board!');
+      return;
+    }
+    
     this.answerSlots.innerHTML = '';
     this.letterBank.innerHTML = '';
     this.usedHint = false;
