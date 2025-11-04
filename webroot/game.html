@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UpPaws Animal Trainer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .game-container {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 30px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            max-width: 600px;
+            width: 100%;
+            text-align: center;
+        }
+        
+        .game-header {
+            margin-bottom: 30px;
+        }
+        
+        .game-title {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .game-subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            margin-bottom: 20px;
+        }
+        
+        .stats {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+        
+        .stat {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-weight: bold;
+        }
+        
+        .puzzle-area {
+            margin-bottom: 30px;
+        }
+        
+        .animal-display {
+            font-size: 4rem;
+            margin-bottom: 20px;
+        }
+        
+        .hint {
+            font-size: 1.1rem;
+            margin-bottom: 20px;
+            opacity: 0.9;
+        }
+        
+        .answer-slots {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+        
+        .slot {
+            width: 50px;
+            height: 50px;
+            background: rgba(255, 255, 255, 0.9);
+            color: #333;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .slot:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .slot.filled {
+            background: #4ECDC4;
+            color: white;
+            transform: scale(1.1);
+        }
+        
+        .letter-bank {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+        
+        .letter {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #FF6B35, #F7931E);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+        
+        .letter:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 8px 25px rgba(255, 107, 53, 0.4);
+        }
+        
+        .letter:active {
+            transform: translateY(-1px) scale(0.95);
+        }
+        
+        .letter.used {
+            opacity: 0.5;
+            transform: scale(0.9);
+            cursor: not-allowed;
+        }
+        
+        .actions {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 25px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #FF6B35, #F7931E);
+            color: white;
+            box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(255, 107, 53, 0.4);
+        }
+        
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+        
+        .result {
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: 15px;
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+        
+        .result.correct {
+            background: rgba(39, 174, 96, 0.8);
+            color: white;
+        }
+        
+        .result.incorrect {
+            background: rgba(231, 76, 60, 0.8);
+            color: white;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        @media (max-width: 600px) {
+            .game-title {
+                font-size: 2rem;
+            }
+            
+            .stats {
+                gap: 10px;
+            }
+            
+            .stat {
+                padding: 8px 16px;
+                font-size: 0.9rem;
+            }
+            
+            .slot, .letter {
+                width: 45px;
+                height: 45px;
+                font-size: 1.3rem;
+            }
+            
+            .actions {
+                gap: 10px;
+            }
+            
+            .btn {
+                padding: 10px 20px;
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <div class="game-header">
+            <div class="game-title">🐾 UpPaws Animal Trainer</div>
+            <div class="game-subtitle">Guess the Animal Puzzle</div>
+        </div>
+        
+        <div class="stats">
+            <div class="stat">👤 <span id="username">Player</span></div>
+            <div class="stat">⭐ <span id="score">0</span></div>
+            <div class="stat">🔥 <span id="streak">0</span></div>
+            <div class="stat">⏱️ <span id="timer">30</span>s</div>
+        </div>
+        
+        <div class="puzzle-area">
+            <div class="animal-display" id="animalEmoji">🦊</div>
+            <div class="hint" id="hint">Arrange the letters to spell the animal name</div>
+            
+            <div class="answer-slots" id="answerSlots">
+                <!-- Answer slots will be generated here -->
+            </div>
+            
+            <div class="letter-bank" id="letterBank">
+                <!-- Letter tiles will be generated here -->
+            </div>
+        </div>
+        
+        <div class="actions">
+            <button class="btn btn-secondary" id="hintBtn">💡 Hint</button>
+            <button class="btn btn-secondary" id="clearBtn">🔄 Clear</button>
+            <button class="btn btn-primary" id="submitBtn">✅ Submit</button>
+        </div>
+        
+        <div id="result" class="result hidden"></div>
+    </div>
+
+    <script>
+        class AnimalGame {
+            constructor() {
+                // Game state
+                this.currentPuzzle = null;
+                this.userAnswer = [];
+                this.score = 0;
+                this.streak = 0;
+                this.timer = 30;
+                this.timerInterval = null;
+                this.username = 'Player';
+                
+                // DOM elements
+                this.usernameEl = document.getElementById('username');
+                this.scoreEl = document.getElementById('score');
+                this.streakEl = document.getElementById('streak');
+                this.timerEl = document.getElementById('timer');
+                this.animalEmojiEl = document.getElementById('animalEmoji');
+                this.hintEl = document.getElementById('hint');
+                this.answerSlotsEl = document.getElementById('answerSlots');
+                this.letterBankEl = document.getElementById('letterBank');
+                this.resultEl = document.getElementById('result');
+                this.hintBtn = document.getElementById('hintBtn');
+                this.clearBtn = document.getElementById('clearBtn');
+                this.submitBtn = document.getElementById('submitBtn');
+                
+                // Animal puzzles
+                this.puzzles = [
+                    { answer: 'FOX', emoji: '🦊', hint: 'A clever forest animal with a bushy tail' },
+                    { answer: 'WOLF', emoji: '🐺', hint: 'A pack hunter that howls at the moon' },
+                    { answer: 'BEAR', emoji: '🐻', hint: 'A large, powerful forest dweller' },
+                    { answer: 'EAGLE', emoji: '🦅', hint: 'A majestic bird of prey that soars high' },
+                    { answer: 'TIGER', emoji: '🐯', hint: 'A striped big cat from Asia' },
+                    { answer: 'LION', emoji: '🦁', hint: 'The king of the jungle' },
+                    { answer: 'ELEPHANT', emoji: '🐘', hint: 'The largest land animal with a trunk' },
+                    { answer: 'GIRAFFE', emoji: '🦒', hint: 'The tallest animal with a long neck' }
+                ];
+                
+                this.init();
+            }
+            
+            init() {
+                console.log('Initializing UpPaws Animal Game...');
+                
+                // Set up event listeners
+                this.hintBtn.addEventListener('click', () => this.showHint());
+                this.clearBtn.addEventListener('click', () => this.clearAnswer());
+                this.submitBtn.addEventListener('click', () => this.submitAnswer());
+                
+                // Send ready message to parent
+                this.sendMessage({ type: 'webViewReady' });
+                
+                // Start with a random puzzle
+                this.startNewPuzzle();
+            }
+            
+            sendMessage(message) {
+                try {
+                    if (window.parent && window.parent.postMessage) {
+                        window.parent.postMessage(message, '*');
+                        console.log('Sent message:', message);
+                    }
+                } catch (error) {
+                    console.error('Error sending message:', error);
+                }
+            }
+            
+            startNewPuzzle() {
+                // Select random puzzle
+                const puzzle = this.puzzles[Math.floor(Math.random() * this.puzzles.length)];
+                this.currentPuzzle = {
+                    answer: puzzle.answer,
+                    emoji: puzzle.emoji,
+                    hint: puzzle.hint,
+                    letters: this.shuffleArray(puzzle.answer.split(''))
+                };
+                
+                console.log('Starting new puzzle:', this.currentPuzzle);
+                
+                // Update UI
+                this.animalEmojiEl.textContent = this.currentPuzzle.emoji;
+                this.hintEl.textContent = this.currentPuzzle.hint;
+                
+                // Build game board
+                this.buildBoard();
+                
+                // Reset timer
+                this.timer = 30;
+                this.startTimer();
+                
+                // Clear result
+                this.resultEl.classList.add('hidden');
+                this.userAnswer = [];
+            }
+            
+            buildBoard() {
+                // Clear existing elements
+                this.answerSlotsEl.innerHTML = '';
+                this.letterBankEl.innerHTML = '';
+                
+                // Create answer slots
+                for (let i = 0; i < this.currentPuzzle.answer.length; i++) {
+                    const slot = document.createElement('div');
+                    slot.className = 'slot';
+                    slot.dataset.index = i;
+                    slot.addEventListener('click', () => this.removeFromSlot(i));
+                    this.answerSlotsEl.appendChild(slot);
+                }
+                
+                // Create letter tiles
+                this.currentPuzzle.letters.forEach((letter, index) => {
+                    const tile = document.createElement('div');
+                    tile.className = 'letter';
+                    tile.textContent = letter;
+                    tile.dataset.letter = letter;
+                    tile.dataset.index = index;
+                    tile.addEventListener('click', () => this.selectLetter(tile));
+                    this.letterBankEl.appendChild(tile);
+                });
+                
+                console.log('Board built successfully');
+            }
+            
+            selectLetter(tile) {
+                if (tile.classList.contains('used')) return;
+                
+                const letter = tile.dataset.letter;
+                const emptySlot = this.answerSlotsEl.querySelector('.slot:not(.filled)');
+                
+                if (emptySlot) {
+                    emptySlot.textContent = letter;
+                    emptySlot.classList.add('filled');
+                    emptySlot.dataset.letter = letter;
+                    emptySlot.dataset.tileIndex = tile.dataset.index;
+                    
+                    tile.classList.add('used');
+                    this.userAnswer.push(letter);
+                    
+                    console.log('Letter selected:', letter, 'Current answer:', this.userAnswer.join(''));
+                }
+            }
+            
+            removeFromSlot(slotIndex) {
+                const slot = this.answerSlotsEl.children[slotIndex];
+                if (!slot.classList.contains('filled')) return;
+                
+                const letter = slot.dataset.letter;
+                const tileIndex = slot.dataset.tileIndex;
+                
+                // Clear slot
+                slot.textContent = '';
+                slot.classList.remove('filled');
+                delete slot.dataset.letter;
+                delete slot.dataset.tileIndex;
+                
+                // Restore letter tile
+                const tile = this.letterBankEl.children[tileIndex];
+                tile.classList.remove('used');
+                
+                // Remove from user answer
+                const answerIndex = this.userAnswer.indexOf(letter);
+                if (answerIndex > -1) {
+                    this.userAnswer.splice(answerIndex, 1);
+                }
+                
+                console.log('Letter removed:', letter, 'Current answer:', this.userAnswer.join(''));
+            }
+            
+            clearAnswer() {
+                // Clear all slots
+                Array.from(this.answerSlotsEl.children).forEach(slot => {
+                    if (slot.classList.contains('filled')) {
+                        slot.textContent = '';
+                        slot.classList.remove('filled');
+                        delete slot.dataset.letter;
+                        delete slot.dataset.tileIndex;
+                    }
+                });
+                
+                // Restore all letter tiles
+                Array.from(this.letterBankEl.children).forEach(tile => {
+                    tile.classList.remove('used');
+                });
+                
+                this.userAnswer = [];
+                console.log('Answer cleared');
+            }
+            
+            showHint() {
+                if (this.currentPuzzle.answer.length > 0) {
+                    const firstLetter = this.currentPuzzle.answer[0];
+                    this.showResult(`💡 Hint: The animal starts with "${firstLetter}"`, 'hint');
+                }
+            }
+            
+            submitAnswer() {
+                const userWord = this.userAnswer.join('');
+                const isCorrect = userWord === this.currentPuzzle.answer;
+                
+                console.log('Submitting answer:', userWord, 'Correct answer:', this.currentPuzzle.answer, 'Is correct:', isCorrect);
+                
+                if (isCorrect) {
+                    this.score += 100;
+                    this.streak += 1;
+                    this.showResult(`🎉 Correct! It's a ${this.currentPuzzle.answer}!`, 'correct');
+                    
+                    // Send success message
+                    this.sendMessage({
+                        type: 'puzzleComplete',
+                        data: { correct: true, answer: this.currentPuzzle.answer, score: this.score }
+                    });
+                    
+                    // Start new puzzle after delay
+                    setTimeout(() => this.startNewPuzzle(), 3000);
+                } else {
+                    this.streak = 0;
+                    this.showResult(`❌ Try again! The answer was ${this.currentPuzzle.answer}`, 'incorrect');
+                    
+                    // Send failure message
+                    this.sendMessage({
+                        type: 'puzzleComplete',
+                        data: { correct: false, answer: this.currentPuzzle.answer, userAnswer: userWord }
+                    });
+                    
+                    // Start new puzzle after delay
+                    setTimeout(() => this.startNewPuzzle(), 3000);
+                }
+                
+                this.updateStats();
+                this.stopTimer();
+            }
+            
+            showResult(message, type) {
+                this.resultEl.textContent = message;
+                this.resultEl.className = `result ${type}`;
+                this.resultEl.classList.remove('hidden');
+            }
+            
+            updateStats() {
+                this.scoreEl.textContent = this.score;
+                this.streakEl.textContent = this.streak;
+            }
+            
+            startTimer() {
+                this.stopTimer();
+                this.timerInterval = setInterval(() => {
+                    this.timer--;
+                    this.timerEl.textContent = this.timer;
+                    
+                    if (this.timer <= 0) {
+                        this.showResult(`⏰ Time's up! The answer was ${this.currentPuzzle.answer}`, 'incorrect');
+                        this.streak = 0;
+                        this.updateStats();
+                        setTimeout(() => this.startNewPuzzle(), 3000);
+                    }
+                }, 1000);
+            }
+            
+            stopTimer() {
+                if (this.timerInterval) {
+                    clearInterval(this.timerInterval);
+                    this.timerInterval = null;
+                }
+            }
+            
+            shuffleArray(array) {
+                const shuffled = [...array];
+                for (let i = shuffled.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+                }
+                return shuffled;
+            }
+            
+            // Handle messages from parent
+            handleMessage(event) {
+                try {
+                    const message = event.data;
+                    console.log('Received message:', message);
+                    
+                    if (message.type === 'initialData') {
+                        const { username, userScore, userStreak } = message.data;
+                        this.username = username || 'Player';
+                        this.score = userScore || 0;
+                        this.streak = userStreak || 0;
+                        
+                        this.usernameEl.textContent = this.username;
+                        this.updateStats();
+                    }
+                } catch (error) {
+                    console.error('Error handling message:', error);
+                }
+            }
+        }
+        
+        // Initialize game when DOM is loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('DOM loaded, starting game...');
+            const game = new AnimalGame();
+            
+            // Listen for messages from parent
+            window.addEventListener('message', (event) => {
+                game.handleMessage(event);
+            });
+        });
+    </script>
+</body>
+</html>
