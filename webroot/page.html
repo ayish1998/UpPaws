@@ -1,523 +1,550 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>UpPaws Animal Trainer</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 20px;
+      }
+
+      .game-container {
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 20px;
+        padding: 40px;
+        backdrop-filter: blur(15px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        max-width: 600px;
+        width: 100%;
+        text-align: center;
+      }
+
+      .game-title {
+        font-size: 2.5rem;
+        margin-bottom: 10px;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+      }
+
+      .game-subtitle {
+        font-size: 1.2rem;
+        opacity: 0.9;
+        margin-bottom: 30px;
+      }
+
+      .stats {
+        display: flex;
+        justify-content: center;
+        gap: 20px;
+        margin-bottom: 30px;
+        flex-wrap: wrap;
+      }
+
+      .stat {
+        background: rgba(255, 255, 255, 0.2);
+        padding: 10px 20px;
+        border-radius: 25px;
+        font-weight: bold;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+      }
+
+      .animal-display {
+        font-size: 5rem;
+        margin: 30px 0;
+        text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.3);
+      }
+
+      .puzzle-hint {
+        font-size: 1.3rem;
+        margin-bottom: 30px;
+        background: rgba(255, 255, 255, 0.1);
+        padding: 15px;
+        border-radius: 15px;
+        border: 2px solid rgba(255, 255, 255, 0.2);
+      }
+
+      .answer-section {
+        margin: 30px 0;
+      }
+
+      .answer-input {
+        font-size: 3rem;
+        padding: 20px;
+        border: 4px solid #4ecdc4;
+        border-radius: 15px;
+        text-align: center;
+        background: rgba(255, 255, 255, 0.95);
+        color: #333;
+        font-weight: bold;
+        width: 100%;
+        max-width: 300px;
+        margin: 20px 0;
+        text-transform: uppercase;
+        letter-spacing: 5px;
+      }
+
+      .answer-input:focus {
+        outline: none;
+        border-color: #ff6b35;
+        box-shadow: 0 0 30px rgba(255, 107, 53, 0.6);
+        transform: scale(1.02);
+      }
+
+      .letter-helpers {
+        display: flex;
+        justify-content: center;
+        gap: 15px;
+        margin: 20px 0;
+        flex-wrap: wrap;
+      }
+
+      .letter-helper {
+        width: 60px;
+        height: 60px;
+        background: linear-gradient(135deg, #ff6b35, #f7931e);
+        color: white;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        font-weight: bold;
+        box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
+        animation: pulse 2s infinite;
+        cursor: pointer;
+        transition: all 0.3s ease;
+      }
+
+      .letter-helper:hover {
+        transform: scale(1.1);
+        box-shadow: 0 8px 20px rgba(255, 107, 53, 0.5);
+      }
+
+      @keyframes pulse {
+        0%,
+        100% {
+          transform: scale(1);
         }
-        
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
+        50% {
+          transform: scale(1.05);
         }
-        
+      }
+
+      .game-buttons {
+        display: flex;
+        justify-content: center;
+        gap: 15px;
+        margin: 30px 0;
+        flex-wrap: wrap;
+      }
+
+      .btn {
+        padding: 15px 30px;
+        border: none;
+        border-radius: 30px;
+        font-weight: bold;
+        cursor: pointer;
+        font-size: 1.1rem;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      }
+
+      .btn-primary {
+        background: linear-gradient(135deg, #ff6b35, #f7931e);
+        color: white;
+      }
+
+      .btn-secondary {
+        background: rgba(255, 255, 255, 0.2);
+        color: white;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+      }
+
+      .btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+      }
+
+      .result-message {
+        margin: 20px 0;
+        padding: 20px;
+        border-radius: 15px;
+        font-size: 1.4rem;
+        font-weight: bold;
+        display: none;
+      }
+
+      .result-message.success {
+        background: rgba(39, 174, 96, 0.9);
+        border: 2px solid #27ae60;
+        display: block;
+      }
+
+      .result-message.error {
+        background: rgba(231, 76, 60, 0.9);
+        border: 2px solid #e74c3c;
+        display: block;
+      }
+
+      .working-badge {
+        position: fixed;
+        top: 15px;
+        left: 15px;
+        background: rgba(39, 174, 96, 0.9);
+        color: white;
+        padding: 10px 20px;
+        border-radius: 25px;
+        font-weight: bold;
+        font-size: 1rem;
+        z-index: 1000;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      }
+
+      @media (max-width: 600px) {
         .game-container {
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 20px;
-            padding: 40px;
-            backdrop-filter: blur(15px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
-            max-width: 600px;
-            width: 100%;
-            text-align: center;
+          padding: 20px;
+          margin: 10px;
         }
-        
+
         .game-title {
-            font-size: 2.5rem;
-            margin-bottom: 10px;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+          font-size: 2rem;
         }
-        
-        .game-subtitle {
-            font-size: 1.2rem;
-            opacity: 0.9;
-            margin-bottom: 30px;
-        }
-        
-        .stats {
-            display: flex;
-            justify-content: center;
-            gap: 20px;
-            margin-bottom: 30px;
-            flex-wrap: wrap;
-        }
-        
-        .stat {
-            background: rgba(255, 255, 255, 0.2);
-            padding: 10px 20px;
-            border-radius: 25px;
-            font-weight: bold;
-            border: 2px solid rgba(255, 255, 255, 0.3);
-        }
-        
+
         .animal-display {
-            font-size: 5rem;
-            margin: 30px 0;
-            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.3);
+          font-size: 4rem;
         }
-        
-        .puzzle-hint {
-            font-size: 1.3rem;
-            margin-bottom: 30px;
-            background: rgba(255, 255, 255, 0.1);
-            padding: 15px;
-            border-radius: 15px;
-            border: 2px solid rgba(255, 255, 255, 0.2);
-        }
-        
-        .answer-section {
-            margin: 30px 0;
-        }
-        
+
         .answer-input {
-            font-size: 3rem;
-            padding: 20px;
-            border: 4px solid #4ECDC4;
-            border-radius: 15px;
-            text-align: center;
-            background: rgba(255, 255, 255, 0.95);
-            color: #333;
-            font-weight: bold;
-            width: 100%;
-            max-width: 300px;
-            margin: 20px 0;
-            text-transform: uppercase;
-            letter-spacing: 5px;
+          font-size: 2rem;
+          padding: 15px;
         }
-        
-        .answer-input:focus {
-            outline: none;
-            border-color: #FF6B35;
-            box-shadow: 0 0 30px rgba(255, 107, 53, 0.6);
-            transform: scale(1.02);
-        }
-        
-        .letter-helpers {
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-            margin: 20px 0;
-            flex-wrap: wrap;
-        }
-        
+
         .letter-helper {
-            width: 60px;
-            height: 60px;
-            background: linear-gradient(135deg, #FF6B35, #F7931E);
-            color: white;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 2rem;
-            font-weight: bold;
-            box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
-            animation: pulse 2s infinite;
-            cursor: pointer;
-            transition: all 0.3s ease;
+          width: 50px;
+          height: 50px;
+          font-size: 1.5rem;
         }
-        
-        .letter-helper:hover {
-            transform: scale(1.1);
-            box-shadow: 0 8px 20px rgba(255, 107, 53, 0.5);
-        }
-        
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-        }
-        
-        .game-buttons {
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-            margin: 30px 0;
-            flex-wrap: wrap;
-        }
-        
-        .btn {
-            padding: 15px 30px;
-            border: none;
-            border-radius: 30px;
-            font-weight: bold;
-            cursor: pointer;
-            font-size: 1.1rem;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-        }
-        
-        .btn-primary {
-            background: linear-gradient(135deg, #FF6B35, #F7931E);
-            color: white;
-        }
-        
-        .btn-secondary {
-            background: rgba(255, 255, 255, 0.2);
-            color: white;
-            border: 2px solid rgba(255, 255, 255, 0.3);
-        }
-        
-        .btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
-        }
-        
-        .result-message {
-            margin: 20px 0;
-            padding: 20px;
-            border-radius: 15px;
-            font-size: 1.4rem;
-            font-weight: bold;
-            display: none;
-        }
-        
-        .result-message.success {
-            background: rgba(39, 174, 96, 0.9);
-            border: 2px solid #27AE60;
-            display: block;
-        }
-        
-        .result-message.error {
-            background: rgba(231, 76, 60, 0.9);
-            border: 2px solid #E74C3C;
-            display: block;
-        }
-        
-        .working-badge {
-            position: fixed;
-            top: 15px;
-            left: 15px;
-            background: rgba(39, 174, 96, 0.9);
-            color: white;
-            padding: 10px 20px;
-            border-radius: 25px;
-            font-weight: bold;
-            font-size: 1rem;
-            z-index: 1000;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-        }
-        
-        @media (max-width: 600px) {
-            .game-container {
-                padding: 20px;
-                margin: 10px;
-            }
-            
-            .game-title {
-                font-size: 2rem;
-            }
-            
-            .animal-display {
-                font-size: 4rem;
-            }
-            
-            .answer-input {
-                font-size: 2rem;
-                padding: 15px;
-            }
-            
-            .letter-helper {
-                width: 50px;
-                height: 50px;
-                font-size: 1.5rem;
-            }
-        }
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <div class="working-badge">🎮 WORKING VERSION</div>
-    
+
     <div class="game-container">
-        <div class="game-title">🐾 UpPaws Animal Trainer</div>
-        <div class="game-subtitle">Guess the Animal Puzzle Game</div>
-        
-        <div class="stats">
-            <div class="stat">👤 <span id="username">Player</span></div>
-            <div class="stat">⭐ <span id="score">0</span></div>
-            <div class="stat">🔥 <span id="streak">0</span></div>
+      <div class="game-title">🐾 UpPaws Animal Trainer</div>
+      <div class="game-subtitle">Guess the Animal Puzzle Game</div>
+
+      <div class="stats">
+        <div class="stat">👤 <span id="username">Player</span></div>
+        <div class="stat">⭐ <span id="score">0</span></div>
+        <div class="stat">🔥 <span id="streak">0</span></div>
+      </div>
+
+      <div class="animal-display" id="animalEmoji">🦊</div>
+
+      <div class="puzzle-hint" id="puzzleHint">
+        Type the animal name in the box below!
+      </div>
+
+      <div class="answer-section">
+        <input
+          type="text"
+          id="answerInput"
+          class="answer-input"
+          placeholder="FOX"
+          maxlength="10"
+          autocomplete="off"
+          oninput="this.value = this.value.toUpperCase()"
+          onkeypress="if(event.key==='Enter') submitAnswer()"
+        />
+
+        <div class="letter-helpers" id="letterHelpers">
+          <div class="letter-helper" onclick="addLetterToInput('F')">F</div>
+          <div class="letter-helper" onclick="addLetterToInput('O')">O</div>
+          <div class="letter-helper" onclick="addLetterToInput('X')">X</div>
         </div>
-        
-        <div class="animal-display" id="animalEmoji">🦊</div>
-        
-        <div class="puzzle-hint" id="puzzleHint">
-            Type the animal name in the box below!
-        </div>
-        
-        <div class="answer-section">
-            <input 
-                type="text" 
-                id="answerInput"
-                class="answer-input" 
-                placeholder="FOX"
-                maxlength="10"
-                autocomplete="off"
-            >
-            
-            <div class="letter-helpers" id="letterHelpers">
-                <div class="letter-helper" data-letter="F">F</div>
-                <div class="letter-helper" data-letter="O">O</div>
-                <div class="letter-helper" data-letter="X">X</div>
-            </div>
-        </div>
-        
-        <div class="game-buttons">
-            <button class="btn btn-secondary" id="hintBtn">💡 Hint</button>
-            <button class="btn btn-secondary" id="clearBtn">🔄 Clear</button>
-            <button class="btn btn-primary" id="submitBtn">✅ Submit</button>
-        </div>
-        
-        <div class="result-message" id="resultMessage"></div>
+      </div>
+
+      <div class="game-buttons">
+        <button class="btn btn-secondary" onclick="showHint()">💡 Hint</button>
+        <button class="btn btn-secondary" onclick="clearAnswer()">
+          🔄 Clear
+        </button>
+        <button class="btn btn-primary" onclick="submitAnswer()">
+          ✅ Submit
+        </button>
+      </div>
+
+      <div class="result-message" id="resultMessage"></div>
     </div>
 
     <script>
-        // Game state
-        let gameState = {
-            currentPuzzle: { answer: 'FOX', emoji: '🦊', hint: 'A clever forest animal with a bushy tail' },
-            score: 0,
-            streak: 0,
-            username: 'Player'
-        };
-        
-        // Animal puzzles
-        const puzzles = [
-            { answer: 'FOX', emoji: '🦊', hint: 'A clever forest animal with a bushy tail' },
-            { answer: 'WOLF', emoji: '🐺', hint: 'A pack hunter that howls at the moon' },
-            { answer: 'BEAR', emoji: '🐻', hint: 'A large, powerful forest dweller' },
-            { answer: 'EAGLE', emoji: '🦅', hint: 'A majestic bird of prey that soars high' },
-            { answer: 'TIGER', emoji: '🐯', hint: 'A striped big cat from Asia' },
-            { answer: 'LION', emoji: '🦁', hint: 'The king of the jungle' }
-        ];
-        
-        // DOM elements
-        const elements = {
-            username: document.getElementById('username'),
-            score: document.getElementById('score'),
-            streak: document.getElementById('streak'),
-            animalEmoji: document.getElementById('animalEmoji'),
-            puzzleHint: document.getElementById('puzzleHint'),
-            answerInput: document.getElementById('answerInput'),
-            letterHelpers: document.getElementById('letterHelpers'),
-            hintBtn: document.getElementById('hintBtn'),
-            clearBtn: document.getElementById('clearBtn'),
-            submitBtn: document.getElementById('submitBtn'),
-            resultMessage: document.getElementById('resultMessage')
-        };
-        
-        // Initialize game
-        function initGame() {
-            console.log('🎮 UpPaws Animal Trainer Starting...');
-            
-            // Send ready message to parent
-            sendToParent({ type: 'webViewReady' });
-            
-            // Set up event listeners
-            setupEventListeners();
-            
-            // Start first puzzle
-            startNewPuzzle();
-            
-            // Focus on input
-            elements.answerInput.focus();
-        }
-        
-        function setupEventListeners() {
-            // Letter helper clicks
-            elements.letterHelpers.addEventListener('click', (e) => {
-                if (e.target.classList.contains('letter-helper')) {
-                    const letter = e.target.dataset.letter;
-                    addLetterToInput(letter);
-                }
-            });
-            
-            // Button clicks
-            elements.hintBtn.addEventListener('click', showHint);
-            elements.clearBtn.addEventListener('click', clearAnswer);
-            elements.submitBtn.addEventListener('click', submitAnswer);
-            
-            // Enter key submission
-            elements.answerInput.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') {
-                    submitAnswer();
-                }
-            });
-            
-            // Auto-uppercase input
-            elements.answerInput.addEventListener('input', (e) => {
-                e.target.value = e.target.value.toUpperCase();
-            });
-        }
-        
-        function addLetterToInput(letter) {
-            const input = elements.answerInput;
-            if (input.value.length < input.maxLength) {
-                input.value += letter;
-                input.focus();
-            }
-        }
-        
-        function clearAnswer() {
-            elements.answerInput.value = '';
-            elements.resultMessage.style.display = 'none';
-            elements.answerInput.focus();
-        }
-        
-        function showHint() {
-            const hint = gameState.currentPuzzle.hint;
-            showResult(`💡 ${hint}`, 'hint');
-        }
-        
-        function submitAnswer() {
-            const userAnswer = elements.answerInput.value.trim().toUpperCase();
-            const correctAnswer = gameState.currentPuzzle.answer;
-            const isCorrect = userAnswer === correctAnswer;
-            
-            console.log('Submitting:', userAnswer, 'Correct:', correctAnswer, 'Match:', isCorrect);
-            
-            if (isCorrect) {
-                gameState.score += 100;
-                gameState.streak += 1;
-                showResult(`🎉 Correct! It's a ${correctAnswer}! +100 points!`, 'success');
-                
-                // Send success to parent
-                sendToParent({
-                    type: 'puzzleComplete',
-                    data: { 
-                        correct: true, 
-                        answer: correctAnswer, 
-                        score: gameState.score,
-                        streak: gameState.streak
-                    }
-                });
-                
-                // Start new puzzle after delay
-                setTimeout(() => {
-                    startNewPuzzle();
-                }, 3000);
-                
-            } else {
-                gameState.streak = 0;
-                showResult(`❌ Try again! The answer is ${correctAnswer}`, 'error');
-                
-                // Send failure to parent
-                sendToParent({
-                    type: 'puzzleComplete',
-                    data: { 
-                        correct: false, 
-                        answer: correctAnswer, 
-                        userAnswer: userAnswer,
-                        streak: gameState.streak
-                    }
-                });
-                
-                // Clear input after delay
-                setTimeout(() => {
-                    clearAnswer();
-                }, 2000);
-            }
-            
-            updateDisplay();
-        }
-        
-        function startNewPuzzle() {
-            // Select random puzzle
-            const puzzle = puzzles[Math.floor(Math.random() * puzzles.length)];
-            gameState.currentPuzzle = puzzle;
-            
-            // Update display
-            elements.animalEmoji.textContent = puzzle.emoji;
-            elements.puzzleHint.textContent = `Spell the name of this animal: ${puzzle.answer.length} letters`;
-            elements.answerInput.placeholder = puzzle.answer;
-            
-            // Update letter helpers
-            updateLetterHelpers(puzzle.answer);
-            
-            // Clear input and result
-            clearAnswer();
-            
-            console.log('New puzzle:', puzzle.answer);
-        }
-        
-        function updateLetterHelpers(answer) {
-            const letters = [...new Set(answer.split(''))]; // Get unique letters
-            elements.letterHelpers.innerHTML = '';
-            
-            letters.forEach(letter => {
-                const helper = document.createElement('div');
-                helper.className = 'letter-helper';
-                helper.dataset.letter = letter;
-                helper.textContent = letter;
-                elements.letterHelpers.appendChild(helper);
-            });
-        }
-        
-        function showResult(message, type) {
-            elements.resultMessage.textContent = message;
-            elements.resultMessage.className = `result-message ${type}`;
-            elements.resultMessage.style.display = 'block';
-        }
-        
-        function updateDisplay() {
-            elements.username.textContent = gameState.username;
-            elements.score.textContent = gameState.score;
-            elements.streak.textContent = gameState.streak;
-        }
-        
-        function sendToParent(message) {
-            try {
-                if (window.parent && window.parent.postMessage) {
-                    window.parent.postMessage(message, '*');
-                    console.log('📤 Sent to parent:', message);
-                }
-            } catch (error) {
-                console.log('ℹ️ Could not send to parent');
-            }
-        }
-        
-        // Handle messages from parent
-        window.addEventListener('message', (event) => {
-            try {
-                const message = event.data;
-                console.log('📨 Received from parent:', message);
-                
-                if (message.type === 'initialData') {
-                    const { username, userScore, userStreak } = message.data;
-                    gameState.username = username || 'Player';
-                    gameState.score = userScore || 0;
-                    gameState.streak = userStreak || 0;
-                    updateDisplay();
-                }
-                
-                if (message.type === 'scoreUpdate') {
-                    const { score, streak } = message.data;
-                    if (score !== undefined) gameState.score = score;
-                    if (streak !== undefined) gameState.streak = streak;
-                    updateDisplay();
-                }
-            } catch (error) {
-                console.error('❌ Message error:', error);
-            }
+      // Game state
+      let gameState = {
+        currentPuzzle: {
+          answer: "FOX",
+          emoji: "🦊",
+          hint: "A clever forest animal with a bushy tail",
+        },
+        score: 0,
+        streak: 0,
+        username: "Player",
+      };
+
+      // Animal puzzles
+      const puzzles = [
+        {
+          answer: "FOX",
+          emoji: "🦊",
+          hint: "A clever forest animal with a bushy tail",
+        },
+        {
+          answer: "WOLF",
+          emoji: "🐺",
+          hint: "A pack hunter that howls at the moon",
+        },
+        {
+          answer: "BEAR",
+          emoji: "🐻",
+          hint: "A large, powerful forest dweller",
+        },
+        {
+          answer: "EAGLE",
+          emoji: "🦅",
+          hint: "A majestic bird of prey that soars high",
+        },
+        { answer: "TIGER", emoji: "🐯", hint: "A striped big cat from Asia" },
+        { answer: "LION", emoji: "🦁", hint: "The king of the jungle" },
+      ];
+
+      // DOM elements
+      const elements = {
+        username: document.getElementById("username"),
+        score: document.getElementById("score"),
+        streak: document.getElementById("streak"),
+        animalEmoji: document.getElementById("animalEmoji"),
+        puzzleHint: document.getElementById("puzzleHint"),
+        answerInput: document.getElementById("answerInput"),
+        letterHelpers: document.getElementById("letterHelpers"),
+        hintBtn: document.getElementById("hintBtn"),
+        clearBtn: document.getElementById("clearBtn"),
+        submitBtn: document.getElementById("submitBtn"),
+        resultMessage: document.getElementById("resultMessage"),
+      };
+
+      // Initialize game
+      function initGame() {
+        console.log("🎮 UpPaws Animal Trainer Starting...");
+
+        // Send ready message to parent
+        sendToParent({ type: "webViewReady" });
+
+        // Set up event listeners
+        setupEventListeners();
+
+        // Start first puzzle
+        startNewPuzzle();
+
+        // Focus on input
+        elements.answerInput.focus();
+      }
+
+      function setupEventListeners() {
+        // Enter key submission
+        elements.answerInput.addEventListener("keypress", (e) => {
+          if (e.key === "Enter") {
+            submitAnswer();
+          }
         });
-        
-        // Start game when page loads
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', initGame);
-        } else {
-            initGame();
+
+        // Auto-uppercase input
+        elements.answerInput.addEventListener("input", (e) => {
+          e.target.value = e.target.value.toUpperCase();
+        });
+      }
+
+      function addLetterToInput(letter) {
+        const input = elements.answerInput;
+        if (input.value.length < input.maxLength) {
+          input.value += letter;
+          input.focus();
         }
-        
-        console.log('🎯 UpPaws Game Script Loaded');
+      }
+
+      function clearAnswer() {
+        elements.answerInput.value = "";
+        elements.resultMessage.style.display = "none";
+        elements.answerInput.focus();
+      }
+
+      function showHint() {
+        const hint = gameState.currentPuzzle.hint;
+        showResult(`💡 ${hint}`, "hint");
+      }
+
+      function submitAnswer() {
+        const userAnswer = elements.answerInput.value.trim().toUpperCase();
+        const correctAnswer = gameState.currentPuzzle.answer;
+        const isCorrect = userAnswer === correctAnswer;
+
+        console.log(
+          "Submitting:",
+          userAnswer,
+          "Correct:",
+          correctAnswer,
+          "Match:",
+          isCorrect
+        );
+
+        if (isCorrect) {
+          gameState.score += 100;
+          gameState.streak += 1;
+          showResult(
+            `🎉 Correct! It's a ${correctAnswer}! +100 points!`,
+            "success"
+          );
+
+          // Send success to parent
+          sendToParent({
+            type: "puzzleComplete",
+            data: {
+              correct: true,
+              answer: correctAnswer,
+              score: gameState.score,
+              streak: gameState.streak,
+            },
+          });
+
+          // Start new puzzle after delay
+          setTimeout(() => {
+            startNewPuzzle();
+          }, 3000);
+        } else {
+          gameState.streak = 0;
+          showResult(`❌ Try again! The answer is ${correctAnswer}`, "error");
+
+          // Send failure to parent
+          sendToParent({
+            type: "puzzleComplete",
+            data: {
+              correct: false,
+              answer: correctAnswer,
+              userAnswer: userAnswer,
+              streak: gameState.streak,
+            },
+          });
+
+          // Clear input after delay
+          setTimeout(() => {
+            clearAnswer();
+          }, 2000);
+        }
+
+        updateDisplay();
+      }
+
+      function startNewPuzzle() {
+        // Select random puzzle
+        const puzzle = puzzles[Math.floor(Math.random() * puzzles.length)];
+        gameState.currentPuzzle = puzzle;
+
+        // Update display
+        elements.animalEmoji.textContent = puzzle.emoji;
+        elements.puzzleHint.textContent = `Spell the name of this animal: ${puzzle.answer.length} letters`;
+        elements.answerInput.placeholder = puzzle.answer;
+
+        // Update letter helpers
+        updateLetterHelpers(puzzle.answer);
+
+        // Clear input and result
+        clearAnswer();
+
+        console.log("New puzzle:", puzzle.answer);
+      }
+
+      function updateLetterHelpers(answer) {
+        const letters = [...new Set(answer.split(""))]; // Get unique letters
+        elements.letterHelpers.innerHTML = "";
+
+        letters.forEach((letter) => {
+          const helper = document.createElement("div");
+          helper.className = "letter-helper";
+          helper.dataset.letter = letter;
+          helper.textContent = letter;
+          elements.letterHelpers.appendChild(helper);
+        });
+      }
+
+      function showResult(message, type) {
+        elements.resultMessage.textContent = message;
+        elements.resultMessage.className = `result-message ${type}`;
+        elements.resultMessage.style.display = "block";
+      }
+
+      function updateDisplay() {
+        elements.username.textContent = gameState.username;
+        elements.score.textContent = gameState.score;
+        elements.streak.textContent = gameState.streak;
+      }
+
+      function sendToParent(message) {
+        try {
+          if (window.parent && window.parent.postMessage) {
+            window.parent.postMessage(message, "*");
+            console.log("📤 Sent to parent:", message);
+          }
+        } catch (error) {
+          console.log("ℹ️ Could not send to parent");
+        }
+      }
+
+      // Handle messages from parent
+      window.addEventListener("message", (event) => {
+        try {
+          const message = event.data;
+          console.log("📨 Received from parent:", message);
+
+          if (message.type === "initialData") {
+            const { username, userScore, userStreak } = message.data;
+            gameState.username = username || "Player";
+            gameState.score = userScore || 0;
+            gameState.streak = userStreak || 0;
+            updateDisplay();
+          }
+
+          if (message.type === "scoreUpdate") {
+            const { score, streak } = message.data;
+            if (score !== undefined) gameState.score = score;
+            if (streak !== undefined) gameState.streak = streak;
+            updateDisplay();
+          }
+        } catch (error) {
+          console.error("❌ Message error:", error);
+        }
+      });
+
+      // Start game when page loads
+      if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", initGame);
+      } else {
+        initGame();
+      }
+
+      console.log("🎯 UpPaws Game Script Loaded");
     </script>
-</body>
+  </body>
 </html>
