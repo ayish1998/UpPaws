@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UpPaws Animal Trainer - Bulletproof Version</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .game {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 30px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+            max-width: 500px;
+            width: 100%;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        }
+        
+        .title {
+            font-size: 2rem;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+        
+        .animal {
+            font-size: 5rem;
+            margin: 20px 0;
+            text-shadow: 2px 2px 8px rgba(0,0,0,0.3);
+        }
+        
+        .hint {
+            font-size: 1.2rem;
+            margin-bottom: 25px;
+            opacity: 0.9;
+            background: rgba(255,255,255,0.1);
+            padding: 10px;
+            border-radius: 10px;
+        }
+        
+        .slots {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin: 25px 0;
+            flex-wrap: wrap;
+            min-height: 60px;
+        }
+        
+        .slot {
+            width: 55px;
+            height: 55px;
+            background: rgba(255, 255, 255, 0.95);
+            color: #333;
+            border: 3px solid #4ECDC4;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+        
+        .slot:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(78, 205, 196, 0.4);
+        }
+        
+        .slot.filled {
+            background: #4ECDC4;
+            color: white;
+            transform: scale(1.1);
+        }
+        
+        .letters {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin: 25px 0;
+            flex-wrap: wrap;
+            min-height: 60px;
+        }
+        
+        .letter {
+            width: 55px;
+            height: 55px;
+            background: linear-gradient(135deg, #FF6B35, #F7931E);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
+        }
+        
+        .letter:hover {
+            transform: translateY(-5px) scale(1.1);
+            box-shadow: 0 10px 25px rgba(255, 107, 53, 0.5);
+        }
+        
+        .letter.used {
+            opacity: 0.4;
+            cursor: not-allowed;
+            transform: scale(0.9);
+        }
+        
+        .buttons {
+            margin: 25px 0;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #FF6B35, #F7931E);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 30px;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 0 8px;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+            box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
+        }
+        
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(255, 107, 53, 0.5);
+        }
+        
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        .result {
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: 15px;
+            font-weight: bold;
+            font-size: 1.3rem;
+        }
+        
+        .result.correct {
+            background: rgba(39, 174, 96, 0.9);
+        }
+        
+        .result.incorrect {
+            background: rgba(231, 76, 60, 0.9);
+        }
+        
+        .result.hint {
+            background: rgba(241, 196, 15, 0.9);
+            color: #333;
+        }
+        
+        .stats {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+        }
+        
+        .stat {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-weight: bold;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        .working-indicator {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            background: rgba(39, 174, 96, 0.9);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 0.9rem;
+            z-index: 1000;
+        }
+    </style>
+</head>
+<body>
+    <div class="working-indicator">🎮 BULLETPROOF VERSION</div>
+    
+    <div class="game">
+        <div class="title">🐾 UpPaws Animal Trainer</div>
+        
+        <div class="stats">
+            <div class="stat">👤 <span id="username">Player</span></div>
+            <div class="stat">⭐ <span id="score">0</span></div>
+            <div class="stat">🔥 <span id="streak">0</span></div>
+        </div>
+        
+        <div class="animal" id="animal">🦊</div>
+        <div class="hint" id="hint">Click the letters below to spell FOX!</div>
+        
+        <!-- Pre-built slots for FOX -->
+        <div class="slots" id="slots">
+            <div class="slot" onclick="removeFromSlot(0)" id="slot0"></div>
+            <div class="slot" onclick="removeFromSlot(1)" id="slot1"></div>
+            <div class="slot" onclick="removeFromSlot(2)" id="slot2"></div>
+        </div>
+        
+        <!-- Pre-built letters for FOX -->
+        <div class="letters" id="letters">
+            <div class="letter" onclick="selectLetter(0)" id="letter0">X</div>
+            <div class="letter" onclick="selectLetter(1)" id="letter1">O</div>
+            <div class="letter" onclick="selectLetter(2)" id="letter2">F</div>
+        </div>
+        
+        <div class="buttons">
+            <button class="btn btn-secondary" onclick="showHint()">💡 Hint</button>
+            <button class="btn btn-secondary" onclick="clearAnswer()">🔄 Clear</button>
+            <button class="btn" onclick="submitAnswer()">✅ Submit</button>
+        </div>
+        
+        <div id="result" class="result" style="display: none;"></div>
+    </div>
+
+    <script>
+        // Game state
+        let currentAnswer = 'FOX';
+        let userAnswer = ['', '', ''];
+        let score = 0;
+        let streak = 0;
+        let letterUsed = [false, false, false];
+        
+        console.log('🎮 Bulletproof UpPaws Game Starting...');
+        
+        // Send ready message
+        try {
+            if (window.parent && window.parent.postMessage) {
+                window.parent.postMessage({ type: 'webViewReady' }, '*');
+                console.log('📤 Ready message sent');
+            }
+        } catch (error) {
+            console.log('ℹ️ Standalone mode');
+        }
+        
+        function selectLetter(letterIndex) {
+            console.log('🎯 Letter clicked:', letterIndex);
+            
+            if (letterUsed[letterIndex]) {
+                console.log('❌ Letter already used');
+                return;
+            }
+            
+            // Find first empty slot
+            let emptySlotIndex = -1;
+            for (let i = 0; i < 3; i++) {
+                if (userAnswer[i] === '') {
+                    emptySlotIndex = i;
+                    break;
+                }
+            }
+            
+            if (emptySlotIndex === -1) {
+                console.log('❌ No empty slots');
+                return;
+            }
+            
+            // Get letter text
+            const letterEl = document.getElementById('letter' + letterIndex);
+            const slotEl = document.getElementById('slot' + emptySlotIndex);
+            const letter = letterEl.textContent;
+            
+            // Place letter in slot
+            userAnswer[emptySlotIndex] = letter;
+            slotEl.textContent = letter;
+            slotEl.classList.add('filled');
+            slotEl.dataset.letterIndex = letterIndex;
+            
+            // Mark letter as used
+            letterUsed[letterIndex] = true;
+            letterEl.classList.add('used');
+            
+            console.log('✅ Letter placed:', letter, 'Answer so far:', userAnswer.join(''));
+        }
+        
+        function removeFromSlot(slotIndex) {
+            console.log('🗑️ Slot clicked:', slotIndex);
+            
+            if (userAnswer[slotIndex] === '') {
+                console.log('❌ Slot already empty');
+                return;
+            }
+            
+            const slotEl = document.getElementById('slot' + slotIndex);
+            const letterIndex = parseInt(slotEl.dataset.letterIndex);
+            const letterEl = document.getElementById('letter' + letterIndex);
+            
+            // Clear slot
+            userAnswer[slotIndex] = '';
+            slotEl.textContent = '';
+            slotEl.classList.remove('filled');
+            delete slotEl.dataset.letterIndex;
+            
+            // Restore letter
+            letterUsed[letterIndex] = false;
+            letterEl.classList.remove('used');
+            
+            console.log('✅ Letter removed, Answer now:', userAnswer.join(''));
+        }
+        
+        function clearAnswer() {
+            console.log('🧹 Clearing all...');
+            
+            for (let i = 0; i < 3; i++) {
+                if (userAnswer[i] !== '') {
+                    const slotEl = document.getElementById('slot' + i);
+                    const letterIndex = parseInt(slotEl.dataset.letterIndex);
+                    const letterEl = document.getElementById('letter' + letterIndex);
+                    
+                    userAnswer[i] = '';
+                    slotEl.textContent = '';
+                    slotEl.classList.remove('filled');
+                    delete slotEl.dataset.letterIndex;
+                    
+                    letterUsed[letterIndex] = false;
+                    letterEl.classList.remove('used');
+                }
+            }
+            
+            console.log('✅ All cleared');
+        }
+        
+        function showHint() {
+            console.log('💡 Showing hint...');
+            showResult('💡 Hint: The animal starts with "F"', 'hint');
+        }
+        
+        function submitAnswer() {
+            console.log('📝 Submitting...');
+            
+            const userWord = userAnswer.join('');
+            const isCorrect = userWord === currentAnswer;
+            
+            console.log('🎯 User answer:', userWord);
+            console.log('✅ Correct answer:', currentAnswer);
+            console.log('🏆 Is correct:', isCorrect);
+            
+            if (isCorrect) {
+                score += 100;
+                streak += 1;
+                showResult('🎉 Correct! It\'s a FOX!', 'correct');
+                
+                // Send success to parent
+                try {
+                    if (window.parent && window.parent.postMessage) {
+                        window.parent.postMessage({
+                            type: 'puzzleComplete',
+                            data: { correct: true, answer: currentAnswer, score: score }
+                        }, '*');
+                    }
+                } catch (error) {
+                    console.log('Could not send to parent');
+                }
+                
+            } else {
+                streak = 0;
+                showResult('❌ Try again! The answer is FOX', 'incorrect');
+                
+                // Send failure to parent
+                try {
+                    if (window.parent && window.parent.postMessage) {
+                        window.parent.postMessage({
+                            type: 'puzzleComplete',
+                            data: { correct: false, answer: currentAnswer, userAnswer: userWord }
+                        }, '*');
+                    }
+                } catch (error) {
+                    console.log('Could not send to parent');
+                }
+            }
+            
+            updateStats();
+            
+            // Reset after 3 seconds
+            setTimeout(() => {
+                clearAnswer();
+                document.getElementById('result').style.display = 'none';
+            }, 3000);
+        }
+        
+        function showResult(message, type) {
+            const resultEl = document.getElementById('result');
+            resultEl.textContent = message;
+            resultEl.className = 'result ' + type;
+            resultEl.style.display = 'block';
+            console.log('📢 Result shown:', message);
+        }
+        
+        function updateStats() {
+            document.getElementById('score').textContent = score;
+            document.getElementById('streak').textContent = streak;
+            console.log('📊 Stats updated - Score:', score, 'Streak:', streak);
+        }
+        
+        // Handle messages from parent
+        window.addEventListener('message', (event) => {
+            try {
+                const message = event.data;
+                console.log('📨 Message from parent:', message);
+                
+                if (message.type === 'initialData') {
+                    const { username, userScore, userStreak } = message.data;
+                    document.getElementById('username').textContent = username || 'Player';
+                    score = userScore || 0;
+                    streak = userStreak || 0;
+                    updateStats();
+                }
+            } catch (error) {
+                console.error('❌ Message error:', error);
+            }
+        });
+        
+        console.log('✅ Bulletproof game ready! Click the letters X, O, F to spell FOX!');
+    </script>
+</body>
+</html>

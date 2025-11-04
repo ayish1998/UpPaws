@@ -384,20 +384,38 @@
             }
             
             buildBoard() {
+                console.log('Building board...');
+                console.log('Answer slots element:', this.answerSlotsEl);
+                console.log('Letter bank element:', this.letterBankEl);
+                console.log('Current puzzle:', this.currentPuzzle);
+                
+                if (!this.answerSlotsEl || !this.letterBankEl) {
+                    console.error('DOM elements not found!');
+                    return;
+                }
+                
+                if (!this.currentPuzzle) {
+                    console.error('No current puzzle!');
+                    return;
+                }
+                
                 // Clear existing elements
                 this.answerSlotsEl.innerHTML = '';
                 this.letterBankEl.innerHTML = '';
                 
                 // Create answer slots
+                console.log('Creating', this.currentPuzzle.answer.length, 'answer slots');
                 for (let i = 0; i < this.currentPuzzle.answer.length; i++) {
                     const slot = document.createElement('div');
                     slot.className = 'slot';
                     slot.dataset.index = i;
                     slot.addEventListener('click', () => this.removeFromSlot(i));
                     this.answerSlotsEl.appendChild(slot);
+                    console.log('Created slot', i);
                 }
                 
                 // Create letter tiles
+                console.log('Creating letter tiles:', this.currentPuzzle.letters);
                 this.currentPuzzle.letters.forEach((letter, index) => {
                     const tile = document.createElement('div');
                     tile.className = 'letter';
@@ -406,9 +424,12 @@
                     tile.dataset.index = index;
                     tile.addEventListener('click', () => this.selectLetter(tile));
                     this.letterBankEl.appendChild(tile);
+                    console.log('Created letter tile:', letter);
                 });
                 
                 console.log('Board built successfully');
+                console.log('Answer slots HTML:', this.answerSlotsEl.innerHTML);
+                console.log('Letter bank HTML:', this.letterBankEl.innerHTML);
             }
             
             selectLetter(tile) {
@@ -691,15 +712,38 @@
         }
         
         // Initialize game when DOM is loaded
-        document.addEventListener('DOMContentLoaded', () => {
-            console.log('DOM loaded, starting game...');
+        function initializeGame() {
+            console.log('Initializing game...');
+            
+            // Check if all required elements exist
+            const requiredElements = ['username', 'score', 'streak', 'timer', 'animalEmoji', 'hint', 'answerSlots', 'letterBank', 'result', 'hintBtn', 'clearBtn', 'submitBtn'];
+            const missingElements = requiredElements.filter(id => !document.getElementById(id));
+            
+            if (missingElements.length > 0) {
+                console.error('Missing elements:', missingElements);
+                setTimeout(initializeGame, 100); // Retry after 100ms
+                return;
+            }
+            
+            console.log('All elements found, starting game...');
             const game = new AnimalGame();
             
             // Listen for messages from parent
             window.addEventListener('message', (event) => {
                 game.handleMessage(event);
             });
-        });
+        }
+        
+        // Try multiple initialization methods
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initializeGame);
+        } else {
+            // DOM already loaded
+            initializeGame();
+        }
+        
+        // Fallback initialization
+        setTimeout(initializeGame, 500);
     </script>
 </body>
 </html>

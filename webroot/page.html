@@ -1,4 +1,4 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta
@@ -16,33 +16,37 @@
       </div>
 
       <!-- HUD -->
-        <div class="hud">
-          <div class="badge">u/<span id="username">User</span></div>
-          <div class="spacer"></div>
-          <button id="btn-shop" class="badge btn-shop">🛒</button>
-          <button id="btn-world-map" class="badge btn-world-map">🗺️</button>
-          <button id="btn-education" class="badge btn-education">🎓</button>
-          <button id="btn-leaderboard" class="badge btn-leaderboard">🏆</button>
-          <div class="badge">🔥 <span id="streakVal">0</span></div>
-          <div class="badge">⏱ <span id="timerVal">15</span>s</div>
-          <div class="badge">⭐ <span id="userScore">0</span></div>
-          <div class="currency-hud">
-            <div class="badge">🪙 <span id="pawCoins">0</span></div>
-            <div class="badge">🔬 <span id="researchPoints">0</span></div>
-            <div class="badge">⚔️ <span id="battleTokens">0</span></div>
-          </div>
-          <button id="muteToggle" class="badge btn-muted">🔊</button>
+      <div class="hud">
+        <div class="badge">u/<span id="username">User</span></div>
+        <div class="spacer"></div>
+        <button id="btn-shop" class="badge btn-shop">🛒</button>
+        <button id="btn-world-map" class="badge btn-world-map">🗺️</button>
+        <button id="btn-education" class="badge btn-education">🎓</button>
+        <button id="btn-leaderboard" class="badge btn-leaderboard">🏆</button>
+        <div class="badge">🔥 <span id="streakVal">0</span></div>
+        <div class="badge">⏱ <span id="timerVal">15</span>s</div>
+        <div class="badge">⭐ <span id="userScore">0</span></div>
+        <div class="currency-hud">
+          <div class="badge">🪙 <span id="pawCoins">0</span></div>
+          <div class="badge">🔬 <span id="researchPoints">0</span></div>
+          <div class="badge">⚔️ <span id="battleTokens">0</span></div>
         </div>
+        <button id="muteToggle" class="badge btn-muted">🔊</button>
+      </div>
 
       <!-- Center Panel -->
       <div class="panel">
         <div class="panel-header">
           <div class="emoji" id="emoji">🦁</div>
           <div class="title" id="challengeTitle">Loading...</div>
-          <div class="subtitle" id="challengeScenario">Preparing your daily puzzle</div>
+          <div class="subtitle" id="challengeScenario">
+            Preparing your daily puzzle
+          </div>
         </div>
 
-        <div class="progress" id="progress"><div class="bar" id="progressBar"></div></div>
+        <div class="progress" id="progress">
+          <div class="bar" id="progressBar"></div>
+        </div>
 
         <div id="puzzle-section" class="content">
           <div class="hint" id="hint">Guess the animal</div>
@@ -54,10 +58,18 @@
           <div class="answer-slots" id="answerSlots"></div>
           <div class="letter-bank" id="letterBank"></div>
           <div class="actions">
-            <button id="btn-power-freeze" class="btn-secondary">❄️ Freeze</button>
-            <button id="btn-power-reveal" class="btn-secondary">✨ Reveal</button>
-            <button id="btn-power-shuffle" class="btn-secondary">🔀 Shuffle</button>
-            <button id="btn-hint" class="btn-secondary">💡 Hint (-2 pts)</button>
+            <button id="btn-power-freeze" class="btn-secondary">
+              ❄️ Freeze
+            </button>
+            <button id="btn-power-reveal" class="btn-secondary">
+              ✨ Reveal
+            </button>
+            <button id="btn-power-shuffle" class="btn-secondary">
+              🔀 Shuffle
+            </button>
+            <button id="btn-hint" class="btn-secondary">
+              💡 Hint (-2 pts)
+            </button>
             <button id="btn-clear" class="btn-secondary">Clear</button>
             <button id="btn-submit" class="btn-primary">Submit</button>
           </div>
@@ -77,8 +89,17 @@
       <div id="startOverlay" class="overlay hidden">
         <div class="overlay-card">
           <div class="overlay-title">UpPaws: Animal Puzzle</div>
-          <div class="overlay-sub">Daily animal challenge. Beat the timer for bonus points!</div>
-          <div style="display:flex; gap:.5rem; justify-content:center; flex-wrap:wrap;">
+          <div class="overlay-sub">
+            Daily animal challenge. Beat the timer for bonus points!
+          </div>
+          <div
+            style="
+              display: flex;
+              gap: 0.5rem;
+              justify-content: center;
+              flex-wrap: wrap;
+            "
+          >
             <button id="btn-start" class="btn-primary">Play Daily</button>
             <button id="btn-arcade" class="btn-secondary">Arcade Mode</button>
           </div>
@@ -204,7 +225,9 @@
               </div>
               <div id="rewardItemsList" class="reward-bonus-items"></div>
             </div>
-            <button id="btn-claim-reward" class="btn-primary">Claim Reward</button>
+            <button id="btn-claim-reward" class="btn-primary">
+              Claim Reward
+            </button>
           </div>
         </div>
       </div>
@@ -240,8 +263,16 @@
             <p id="region-description">Click on a region to see details</p>
             <div id="region-weather" class="weather-info"></div>
             <div id="region-actions" class="region-actions">
-              <button id="btn-explore-region" class="btn btn-primary" disabled>Explore</button>
-              <button id="btn-view-expeditions" class="btn btn-secondary" disabled>Daily Expeditions</button>
+              <button id="btn-explore-region" class="btn btn-primary" disabled>
+                Explore
+              </button>
+              <button
+                id="btn-view-expeditions"
+                class="btn btn-secondary"
+                disabled
+              >
+                Daily Expeditions
+              </button>
             </div>
           </div>
         </div>
@@ -267,14 +298,21 @@
             <div class="exploration-options">
               <div class="expedition-type">
                 <label>
-                  <input type="radio" name="expeditionType" value="normal" checked>
+                  <input
+                    type="radio"
+                    name="expeditionType"
+                    value="normal"
+                    checked
+                  />
                   <span>Normal Expedition</span>
                   <small>Standard exploration with regular rewards</small>
                 </label>
                 <label>
-                  <input type="radio" name="expeditionType" value="extended">
+                  <input type="radio" name="expeditionType" value="extended" />
                   <span>Extended Expedition</span>
-                  <small>Longer exploration with better rewards (2x cost)</small>
+                  <small
+                    >Longer exploration with better rewards (2x cost)</small
+                  >
                 </label>
               </div>
               <div class="exploration-cost">
@@ -284,8 +322,12 @@
               </div>
             </div>
             <div class="exploration-actions">
-              <button id="btn-start-exploration" class="btn btn-primary">Start Exploration</button>
-              <button id="btn-view-weather-forecast" class="btn btn-secondary">Weather Forecast</button>
+              <button id="btn-start-exploration" class="btn btn-primary">
+                Start Exploration
+              </button>
+              <button id="btn-view-weather-forecast" class="btn btn-secondary">
+                Weather Forecast
+              </button>
             </div>
           </div>
         </div>
@@ -300,7 +342,9 @@
           <div id="exploration-results" class="exploration-results">
             <!-- Results will be populated here -->
           </div>
-          <button id="btn-close-results" class="btn btn-primary">Continue</button>
+          <button id="btn-close-results" class="btn btn-primary">
+            Continue
+          </button>
         </div>
       </div>
 
@@ -387,8 +431,12 @@
             <!-- Content details will be loaded here -->
           </div>
           <div class="content-detail-actions">
-            <button id="btn-start-content" class="btn btn-primary">Start Activity</button>
-            <button id="btn-complete-content" class="btn btn-success hidden">Complete Activity</button>
+            <button id="btn-start-content" class="btn btn-primary">
+              Start Activity
+            </button>
+            <button id="btn-complete-content" class="btn btn-success hidden">
+              Complete Activity
+            </button>
           </div>
         </div>
       </div>
@@ -401,18 +449,26 @@
             <button id="btn-close-ama-question" class="btn-close">✕</button>
           </div>
           <div class="ama-question-body">
-            <textarea id="ama-question-text" placeholder="Enter your question for the expert..." rows="4"></textarea>
+            <textarea
+              id="ama-question-text"
+              placeholder="Enter your question for the expert..."
+              rows="4"
+            ></textarea>
             <div class="question-guidelines">
               <h4>Guidelines:</h4>
               <ul>
-                <li>Keep questions focused on the expert's area of expertise</li>
+                <li>
+                  Keep questions focused on the expert's area of expertise
+                </li>
                 <li>Be respectful and constructive</li>
                 <li>Avoid duplicate questions</li>
               </ul>
             </div>
           </div>
           <div class="ama-question-actions">
-            <button id="btn-submit-question" class="btn btn-primary">Submit Question</button>
+            <button id="btn-submit-question" class="btn btn-primary">
+              Submit Question
+            </button>
           </div>
         </div>
       </div>
@@ -422,7 +478,9 @@
         <div class="overlay-card data-contribution-card">
           <div class="data-contribution-header">
             <h2>Contribute Data</h2>
-            <button id="btn-close-data-contribution" class="btn-close">✕</button>
+            <button id="btn-close-data-contribution" class="btn-close">
+              ✕
+            </button>
           </div>
           <div class="data-contribution-body">
             <div class="contribution-form">
@@ -431,23 +489,35 @@
                 <select id="data-type">
                   <option value="animal_sighting">Animal Sighting</option>
                   <option value="habitat_condition">Habitat Condition</option>
-                  <option value="behavior_observation">Behavior Observation</option>
+                  <option value="behavior_observation">
+                    Behavior Observation
+                  </option>
                   <option value="population_count">Population Count</option>
                   <option value="environmental_data">Environmental Data</option>
                 </select>
               </div>
               <div class="form-group">
                 <label for="data-location">Location (optional):</label>
-                <input type="text" id="data-location" placeholder="e.g., Central Park, New York">
+                <input
+                  type="text"
+                  id="data-location"
+                  placeholder="e.g., Central Park, New York"
+                />
               </div>
               <div class="form-group">
                 <label for="data-details">Details:</label>
-                <textarea id="data-details" placeholder="Provide detailed information about your observation..." rows="4"></textarea>
+                <textarea
+                  id="data-details"
+                  placeholder="Provide detailed information about your observation..."
+                  rows="4"
+                ></textarea>
               </div>
             </div>
           </div>
           <div class="data-contribution-actions">
-            <button id="btn-submit-data" class="btn btn-primary">Submit Data</button>
+            <button id="btn-submit-data" class="btn btn-primary">
+              Submit Data
+            </button>
           </div>
         </div>
       </div>
@@ -457,16 +527,16 @@
 
     <script type="application/javascript">
       // Simple loading indicator
-      console.log('UpPaws game loading...');
-      
+      console.log("UpPaws game loading...");
+
       // Add loading message
-      document.addEventListener('DOMContentLoaded', function() {
-        console.log('DOM loaded, initializing game...');
-        const gameRoot = document.getElementById('gameRoot');
+      document.addEventListener("DOMContentLoaded", function () {
+        console.log("DOM loaded, initializing game...");
+        const gameRoot = document.getElementById("gameRoot");
         if (gameRoot) {
-          console.log('Game root found, loading script...');
+          console.log("Game root found, loading script...");
         } else {
-          console.error('Game root not found!');
+          console.error("Game root not found!");
         }
       });
     </script>
