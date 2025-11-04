@@ -575,7 +575,7 @@ Devvit.addCustomPostType({
 
     const webView = useWebView<WebViewMessage, DevvitMessage>({
       // URL of your web view content
-      url: "bulletproof-game.html",
+      url: "page.html",
 
       // Handle messages sent from the web view
       async onMessage(message, webView) {
