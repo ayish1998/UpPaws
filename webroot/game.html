@@ -350,6 +350,11 @@
                 }
             }
             
+            // Request real-time leaderboard data
+            requestLeaderboard() {
+                this.sendMessage({ type: 'getLeaderboard' });
+            }
+            
             startNewPuzzle() {
                 // Select random puzzle
                 const puzzle = this.puzzles[Math.floor(Math.random() * this.puzzles.length)];
@@ -484,35 +489,30 @@
                 
                 console.log('Submitting answer:', userWord, 'Correct answer:', this.currentPuzzle.answer, 'Is correct:', isCorrect);
                 
+                // Send puzzle completion to backend for real-time processing
+                this.sendMessage({
+                    type: 'puzzleComplete',
+                    data: { 
+                        correct: isCorrect, 
+                        answer: this.currentPuzzle.answer, 
+                        userAnswer: userWord,
+                        timeTaken: 30 - this.timer,
+                        score: this.score
+                    }
+                });
+                
                 if (isCorrect) {
-                    this.score += 100;
-                    this.streak += 1;
                     this.showResult(`🎉 Correct! It's a ${this.currentPuzzle.answer}!`, 'correct');
-                    
-                    // Send success message
-                    this.sendMessage({
-                        type: 'puzzleComplete',
-                        data: { correct: true, answer: this.currentPuzzle.answer, score: this.score }
-                    });
-                    
-                    // Start new puzzle after delay
-                    setTimeout(() => this.startNewPuzzle(), 3000);
                 } else {
-                    this.streak = 0;
                     this.showResult(`❌ Try again! The answer was ${this.currentPuzzle.answer}`, 'incorrect');
-                    
-                    // Send failure message
-                    this.sendMessage({
-                        type: 'puzzleComplete',
-                        data: { correct: false, answer: this.currentPuzzle.answer, userAnswer: userWord }
-                    });
-                    
-                    // Start new puzzle after delay
-                    setTimeout(() => this.startNewPuzzle(), 3000);
                 }
                 
-                this.updateStats();
                 this.stopTimer();
+                
+                // Start new puzzle after delay
+                setTimeout(() => this.startNewPuzzle(), 3000);
+                
+
             }
             
             showResult(message, type) {
@@ -563,18 +563,130 @@
                     const message = event.data;
                     console.log('Received message:', message);
                     
-                    if (message.type === 'initialData') {
-                        const { username, userScore, userStreak } = message.data;
-                        this.username = username || 'Player';
-                        this.score = userScore || 0;
-                        this.streak = userStreak || 0;
-                        
-                        this.usernameEl.textContent = this.username;
-                        this.updateStats();
+                    switch (message.type) {
+                        case 'initialData':
+                            const { username, userScore, userStreak } = message.data;
+                            this.username = username || 'Player';
+                            this.score = userScore || 0;
+                            this.streak = userStreak || 0;
+                            
+                            this.usernameEl.textContent = this.username;
+                            this.updateStats();
+                            
+                            // Request initial leaderboard
+                            setTimeout(() => this.requestLeaderboard(), 1000);
+                            break;
+                            
+                        case 'scoreUpdate':
+                            // Real-time score update from backend
+                            const { score, streak, pointsEarned, leaderboard, streakBroken } = message.data;
+                            
+                            if (score !== undefined) {
+                                this.score = score;
+                            }
+                            if (streak !== undefined) {
+                                this.streak = streak;
+                            }
+                            
+                            this.updateStats();
+                            
+                            // Show points earned animation
+                            if (pointsEarned) {
+                                this.showPointsEarned(pointsEarned);
+                            }
+                            
+                            // Show streak broken message
+                            if (streakBroken) {
+                                this.showResult('💔 Streak broken! Try again!', 'streak-broken');
+                            }
+                            
+                            // Update leaderboard display if provided
+                            if (leaderboard) {
+                                this.updateLeaderboardDisplay(leaderboard);
+                            }
+                            break;
+                            
+                        case 'leaderboardData':
+                            // Real-time leaderboard update
+                            const { scoreLeaderboard, streakLeaderboard } = message.data;
+                            this.updateLeaderboardDisplay(scoreLeaderboard);
+                            break;
                     }
                 } catch (error) {
                     console.error('Error handling message:', error);
                 }
+            }
+            
+            // Show points earned animation
+            showPointsEarned(points) {
+                const pointsEl = document.createElement('div');
+                pointsEl.textContent = `+${points}`;
+                pointsEl.style.cssText = `
+                    position: absolute;
+                    top: 50%;
+                    left: 50%;
+                    transform: translate(-50%, -50%);
+                    font-size: 2rem;
+                    font-weight: bold;
+                    color: #FFD700;
+                    text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+                    pointer-events: none;
+                    z-index: 1000;
+                    animation: pointsFloat 2s ease-out forwards;
+                `;
+                
+                // Add CSS animation
+                if (!document.getElementById('pointsAnimation')) {
+                    const style = document.createElement('style');
+                    style.id = 'pointsAnimation';
+                    style.textContent = `
+                        @keyframes pointsFloat {
+                            0% { opacity: 1; transform: translate(-50%, -50%) scale(0.5); }
+                            50% { opacity: 1; transform: translate(-50%, -70%) scale(1.2); }
+                            100% { opacity: 0; transform: translate(-50%, -90%) scale(1); }
+                        }
+                    `;
+                    document.head.appendChild(style);
+                }
+                
+                document.body.appendChild(pointsEl);
+                setTimeout(() => pointsEl.remove(), 2000);
+            }
+            
+            // Update leaderboard display
+            updateLeaderboardDisplay(leaderboard) {
+                // Create or update leaderboard UI element
+                let leaderboardEl = document.getElementById('leaderboard');
+                if (!leaderboardEl) {
+                    leaderboardEl = document.createElement('div');
+                    leaderboardEl.id = 'leaderboard';
+                    leaderboardEl.style.cssText = `
+                        position: fixed;
+                        top: 10px;
+                        right: 10px;
+                        background: rgba(0,0,0,0.8);
+                        color: white;
+                        padding: 10px;
+                        border-radius: 10px;
+                        font-size: 0.8rem;
+                        max-width: 200px;
+                        z-index: 1000;
+                    `;
+                    document.body.appendChild(leaderboardEl);
+                }
+                
+                let html = '<div style="font-weight: bold; margin-bottom: 5px;">🏆 Top Players</div>';
+                leaderboard.slice(0, 5).forEach((player, index) => {
+                    const medal = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `${index + 1}.`;
+                    html += `<div>${medal} ${player.username}: ${player.score}</div>`;
+                });
+                
+                leaderboardEl.innerHTML = html;
+                
+                // Auto-hide after 5 seconds
+                setTimeout(() => {
+                    if (leaderboardEl) leaderboardEl.style.opacity = '0.3';
+                }, 5000);
             }
         }
         
